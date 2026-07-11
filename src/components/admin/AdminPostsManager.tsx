@@ -401,21 +401,42 @@ export default function AdminPostsManager({
             return (
               <div
                 key={key}
-                className={`rounded-2xl border p-4 transition-colors ${
+                className={`relative overflow-hidden rounded-2xl border p-4 transition-all duration-200 ${
                   active
-                    ? "border-accent-purple/50 bg-bg-secondary/80"
-                    : "border-white/8 bg-bg-secondary/40 hover:border-white/15"
+                    ? "border-accent-orange/80 bg-accent-purple/25 shadow-[0_0_0_1px_color-mix(in_srgb,var(--accent-orange)_35%,transparent),0_0_24px_color-mix(in_srgb,var(--accent-orange)_18%,transparent)]"
+                    : "border-white/8 bg-bg-secondary/40 hover:border-white/20 hover:bg-bg-secondary/55"
                 }`}
               >
+                {active && (
+                  <span
+                    aria-hidden
+                    className="absolute inset-y-3 left-0 w-1 rounded-r-full bg-accent-orange shadow-[0_0_12px_color-mix(in_srgb,var(--accent-orange)_70%,transparent)]"
+                  />
+                )}
                 <button
                   type="button"
                   onClick={() => selectPost(post.slug || "__new__")}
-                  className="w-full text-left"
+                  className={`w-full text-left ${active ? "pl-3" : ""}`}
                 >
-                  <p className="font-medium text-bone">
-                    {post.title || post.excerpt || "New post"}
-                  </p>
-                  <p className="mt-1 text-xs text-muted">
+                  <div className="flex items-start justify-between gap-2">
+                    <p
+                      className={`font-medium ${
+                        active ? "text-bone" : "text-bone/90"
+                      }`}
+                    >
+                      {post.title || post.excerpt || "New post"}
+                    </p>
+                    {active && (
+                      <span className="shrink-0 rounded-full border border-accent-orange/50 bg-accent-orange/15 px-2 py-0.5 text-[0.6rem] font-bold uppercase tracking-wider text-accent-orange">
+                        Editing
+                      </span>
+                    )}
+                  </div>
+                  <p
+                    className={`mt-1 text-xs ${
+                      active ? "text-bone/75" : "text-muted"
+                    }`}
+                  >
                     {statusLabel(post.status)}
                     {post.size === "large" ? " · Large" : " · Small"}
                     {post.when ? ` · ${post.when}` : ""}
