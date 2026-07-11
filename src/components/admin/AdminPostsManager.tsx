@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import {
   ArrowDown,
   ArrowUp,
+  ChevronDown,
   ExternalLink,
   LogOut,
   Loader2,
@@ -974,10 +975,16 @@ export default function AdminPostsManager({
                 </div>
               </div>
 
-              <details className="rounded-xl border border-white/8 bg-bg-primary/40 p-4">
-                <summary className="flex cursor-pointer list-none items-center gap-2 text-sm font-medium text-gold [&::-webkit-details-marker]:hidden">
-                  <span>Optional overrides</span>
-                  <FieldHelp text="Only use these if you want to change the title or date text from what was pulled in automatically. You can leave these alone." />
+              <details className="group rounded-xl border border-white/8 bg-bg-primary/40 p-4">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-medium text-gold [&::-webkit-details-marker]:hidden">
+                  <span className="flex items-center gap-2">
+                    <span>Optional overrides</span>
+                    <FieldHelp text="Only use these if you want to change the title or date text from what was pulled in automatically. You can leave these alone." />
+                  </span>
+                  <ChevronDown
+                    className="h-4 w-4 shrink-0 text-muted transition-transform duration-200 group-open:rotate-180"
+                    aria-hidden
+                  />
                 </summary>
                 <div className="mt-4 space-y-4">
                   <div>
