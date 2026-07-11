@@ -137,39 +137,72 @@ type WhatsNewProps = {
 
 function smallGridClass(count: number): string {
   if (count === 1) return "";
-  if (count === 2) return "grid gap-6 sm:grid-cols-2";
+  // 2 or 4 cards: balanced rows without a lone orphan in a 3-column grid
+  if (count === 2 || count === 4) return "grid gap-6 sm:grid-cols-2";
   return "grid gap-6 sm:grid-cols-2 lg:grid-cols-3";
 }
 
-/** Split small posts so no row ends with a lone card in a 3-column grid. */
-function chunkSmallPosts(posts: BlogPost[]): BlogPost[][] {
-  const chunks: BlogPost[][] = [];
-  let i = 0;
+function renderSmallBatch(
+  batch: BlogPost[],
+  blocks: ReactNode[],
+  reduce: boolean | null,
+  smallIndex: { current: number },
+) {
+  const count = batch.length;
+  if (count === 0) return;
 
-  while (i < posts.length) {
-    const remaining = posts.length - i;
-
-    if (remaining === 1) {
-      chunks.push([posts[i++]]);
-    } else if (remaining === 4) {
-      chunks.push(posts.slice(i, i + 2), posts.slice(i + 2, i + 4));
-      i += 4;
-    } else if (remaining === 2) {
-      chunks.push(posts.slice(i, i + 2));
-      i += 2;
-    } else if (remaining === 5) {
-      chunks.push(posts.slice(i, i + 3), posts.slice(i + 3, i + 5));
-      i += 5;
-    } else if (remaining % 3 === 1) {
-      chunks.push(posts.slice(i, i + 2));
-      i += 2;
-    } else {
-      chunks.push(posts.slice(i, i + 3));
-      i += 3;
-    }
+  if (count === 1) {
+    const post = batch[0];
+    blocks.push(
+      <BlogCard
+        key={post.slug}
+        post={post}
+        index={smallIndex.current}
+        reduce={reduce}
+        wide
+      />,
+    );
+    smallIndex.current += 1;
+    return;
   }
 
-  return chunks;
+  // 7, 10, … in a 3-col grid would leave one orphan — pull it into a wide card
+  const needsWideOrphan = count > 4 && count % 3 === 1;
+  const gridPosts = needsWideOrphan ? batch.slice(0, -1) : batch;
+  const orphan = needsWideOrphan ? batch[batch.length - 1] : null;
+
+  blocks.push(
+    <div
+      key={`grid-${gridPosts[0]?.slug}-${blocks.length}`}
+      className={smallGridClass(gridPosts.length)}
+    >
+      {gridPosts.map((post) => {
+        const card = (
+          <BlogCard
+            key={post.slug}
+            post={post}
+            index={smallIndex.current}
+            reduce={reduce}
+          />
+        );
+        smallIndex.current += 1;
+        return card;
+      })}
+    </div>,
+  );
+
+  if (orphan) {
+    blocks.push(
+      <BlogCard
+        key={orphan.slug}
+        post={orphan}
+        index={smallIndex.current}
+        reduce={reduce}
+        wide
+      />,
+    );
+    smallIndex.current += 1;
+  }
 }
 
 function renderOrderedPosts(
@@ -178,47 +211,10 @@ function renderOrderedPosts(
 ) {
   const blocks: ReactNode[] = [];
   let smallBatch: BlogPost[] = [];
-  let smallIndex = 0;
+  const smallIndex = { current: 0 };
 
   const flushSmall = () => {
-    if (smallBatch.length === 0) return;
-
-    chunkSmallPosts(smallBatch).forEach((chunk, chunkIndex) => {
-      if (chunk.length === 1) {
-        const post = chunk[0];
-        blocks.push(
-          <BlogCard
-            key={post.slug}
-            post={post}
-            index={smallIndex}
-            reduce={reduce}
-            wide
-          />,
-        );
-        smallIndex += 1;
-      } else {
-        blocks.push(
-          <div
-            key={`grid-${chunk[0]?.slug}-${blocks.length}-${chunkIndex}`}
-            className={smallGridClass(chunk.length)}
-          >
-            {chunk.map((post) => {
-              const card = (
-                <BlogCard
-                  key={post.slug}
-                  post={post}
-                  index={smallIndex}
-                  reduce={reduce}
-                />
-              );
-              smallIndex += 1;
-              return card;
-            })}
-          </div>,
-        );
-      }
-    });
-
+    renderSmallBatch(smallBatch, blocks, reduce, smallIndex);
     smallBatch = [];
   };
 
