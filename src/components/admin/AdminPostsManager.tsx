@@ -628,7 +628,7 @@ export default function AdminPostsManager({
           <Plus className="h-4 w-4" />
           Add post
         </button>
-        <FieldHelp text="Start a new blog card for the What's New section. Pick it from the list on the left to fill in the link, description, and image." />
+        <FieldHelp text="Add a new post, or click a post below to edit it." />
       </div>
 
       {deployingSlugs.size > 0 && (
@@ -1027,7 +1027,7 @@ export default function AdminPostsManager({
           </section>
         ) : (
           <section className="rounded-2xl border border-dashed border-white/10 p-10 text-center text-muted">
-            Select a post to edit it here.
+            Add a new post, or click a post below to edit it here.
           </section>
         )}
       </div>
