@@ -10,6 +10,7 @@ import {
   ThreadsIcon,
   TikTokIcon,
   TumblrIcon,
+  XIcon,
   YoutubeIcon,
 } from "./icons/SocialIcons";
 
@@ -69,6 +70,14 @@ const platforms = [
     Icon: ThreadsIcon,
     variant: "purple" as const,
     glow: "#4A245A",
+  },
+  {
+    name: "X",
+    description: "Spooky updates, event news, and quick takes",
+    href: "https://x.com/spookystephiee",
+    Icon: XIcon,
+    variant: "ghost" as const,
+    glow: "#F5F2EA",
   },
 ];
 

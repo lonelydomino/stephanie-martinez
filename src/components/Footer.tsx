@@ -5,6 +5,7 @@ import {
   ThreadsIcon,
   TikTokIcon,
   TumblrIcon,
+  XIcon,
   YoutubeIcon,
 } from "./icons/SocialIcons";
 
@@ -18,6 +19,7 @@ const socials = [
   { href: "https://www.snapchat.com/t/cLyAhQuI", label: "Snapchat", Icon: SnapchatIcon },
   { href: "https://www.tumblr.com/simply-stephanie93", label: "Tumblr", Icon: TumblrIcon },
   { href: "https://www.threads.com/@simplyspookystephanie", label: "Threads", Icon: ThreadsIcon },
+  { href: "https://x.com/spookystephiee", label: "X", Icon: XIcon },
 ];
 
 export default function Footer() {
