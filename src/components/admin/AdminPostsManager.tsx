@@ -131,6 +131,13 @@ type PendingNavigation = {
   slug: string | null;
 };
 
+function isNewDraft(
+  post: WhatsNewPostSource,
+  savedPosts: WhatsNewPostSource[],
+): boolean {
+  return findSavedIndex(post, savedPosts) < 0;
+}
+
 function getDeployingSlugs(
   pending: WhatsNewPostSource[],
   server: WhatsNewPostSource[],
@@ -547,12 +554,18 @@ export default function AdminPostsManager({
 
     const data = (await response.json()) as { path: string };
     updateSelected({ coverImage: data.path, slug });
-    setMessage("Cover uploaded. Click Save post to publish it.");
+    setMessage(
+      isNewDraft(selectedPost, savedPosts)
+        ? "Cover uploaded. Click Create post to publish it."
+        : "Cover uploaded. Click Save post to publish it.",
+    );
   }
 
   const selectedDisplayImage = selectedPost
     ? postPreviewImage(selectedPost, resolvedPreviews, preview)
     : "";
+  const isCreating =
+    selectedPost != null && isNewDraft(selectedPost, savedPosts);
 
   async function logout() {
     await fetch("/api/admin/logout", { method: "POST" });
@@ -606,7 +619,11 @@ export default function AdminPostsManager({
           Add post
         </button>
         {hasUnsavedChanges && !saving && (
-          <span className="text-sm text-gold">This post has unsaved changes</span>
+          <span className="text-sm text-gold">
+            {isCreating
+              ? "This new post has unsaved changes"
+              : "This post has unsaved changes"}
+          </span>
         )}
       </div>
 
@@ -637,6 +654,7 @@ export default function AdminPostsManager({
               (selectedSlug === "__new__" && !post.slug && index === selectedIndex);
             const postDirty = isPostDirty(post, savedPosts);
             const isDeploying = Boolean(post.slug && deployingSlugs.has(post.slug));
+            const postIsNew = isNewDraft(post, savedPosts);
 
             return (
               <div
@@ -689,7 +707,7 @@ export default function AdminPostsManager({
                       )}
                       {active && !isDeploying && (
                         <span className="rounded-full border border-accent-orange/50 bg-accent-orange/15 px-2 py-0.5 text-[0.6rem] font-bold uppercase tracking-wider text-accent-orange">
-                          Editing
+                          {postIsNew ? "Creating" : "Editing"}
                         </span>
                       )}
                     </div>
@@ -743,12 +761,12 @@ export default function AdminPostsManager({
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <h2 className="font-display text-xl font-semibold text-bone">
-                  Edit post
+                  {isCreating ? "Create new post" : "Edit post"}
                 </h2>
                 <p className="mt-1 text-sm text-muted">
-                  Saved covers and linked posts show their preview right away.
-                  Paste a new YouTube or Instagram link to update title, date,
-                  and thumbnail automatically.
+                  {isCreating
+                    ? "Paste a YouTube or Instagram link to pull in the title, date, and thumbnail. Add a short description, then create the post when you are ready."
+                    : "Saved covers and linked posts show their preview right away. Paste a new YouTube or Instagram link to update title, date, and thumbnail automatically."}
                 </p>
               </div>
               <button
@@ -758,7 +776,13 @@ export default function AdminPostsManager({
                 className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-accent-orange px-4 py-2.5 text-sm font-semibold text-bone hover:opacity-90 disabled:opacity-50"
               >
                 <Save className="h-4 w-4" />
-                {saving ? "Saving…" : "Save post"}
+                {saving
+                  ? isCreating
+                    ? "Creating…"
+                    : "Saving…"
+                  : isCreating
+                    ? "Create post"
+                    : "Save post"}
               </button>
             </div>
 
@@ -962,8 +986,9 @@ export default function AdminPostsManager({
               Unsaved changes
             </h3>
             <p className="mt-3 text-sm leading-relaxed text-muted">
-              This post has changes that haven&apos;t been saved yet. Save before
-              switching, or leave without saving and discard those changes.
+              {isCreating
+                ? "This new post has changes that haven\u2019t been saved yet. Create it before switching, or leave without saving and discard the draft."
+                : "This post has changes that haven\u2019t been saved yet. Save before switching, or leave without saving and discard those changes."}
             </p>
             <div className="mt-6 space-y-3 border-t border-white/8 pt-5">
               <button
@@ -973,7 +998,13 @@ export default function AdminPostsManager({
                 className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-accent-orange px-4 py-3 text-sm font-semibold text-bone hover:opacity-90 disabled:opacity-50"
               >
                 <Save className="h-4 w-4" />
-                {saving ? "Saving…" : "Save and leave"}
+                {saving
+                  ? isCreating
+                    ? "Creating…"
+                    : "Saving…"
+                  : isCreating
+                    ? "Create and leave"
+                    : "Save and leave"}
               </button>
               <div className="grid grid-cols-2 gap-3">
                 <button
