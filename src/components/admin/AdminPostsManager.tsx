@@ -760,8 +760,8 @@ export default function AdminPostsManager({
                 </h2>
                 <p className="mt-1 text-sm text-muted">
                   {isCreating
-                    ? "Paste a YouTube or Instagram link to pull in the title, date, and thumbnail. Add a short description, then create the post when you are ready."
-                    : "Saved covers and linked posts show their preview right away. Paste a new YouTube or Instagram link to update title, date, and thumbnail automatically."}
+                    ? "Paste a YouTube, Instagram, TikTok, or Tumblr link to pull in the title, date, and thumbnail. Add a short description, then create the post when you are ready."
+                    : "Saved covers and linked posts show their preview right away. Paste a new YouTube, Instagram, TikTok, or Tumblr link to update title, date, and thumbnail automatically."}
                 </p>
               </div>
               <div className="flex flex-col items-stretch gap-2 sm:items-end">
@@ -854,14 +854,14 @@ export default function AdminPostsManager({
               <div>
                 <FieldLabel
                   htmlFor="post-link"
-                  label="YouTube or Instagram link"
-                  help="Paste the full web address from YouTube or Instagram. The site will automatically fill in the title, date, and thumbnail image."
+                  label="YouTube, Instagram, TikTok, or Tumblr link"
+                  help="Paste the full web address from YouTube, Instagram, TikTok, or Tumblr. The site will automatically fill in the title, date when available, and thumbnail image."
                 />
                 <input
                   id="post-link"
                   value={selectedPost.href ?? ""}
                   onChange={(event) => handleHrefChange(event.target.value)}
-                  placeholder="https://youtu.be/... or https://instagram.com/..."
+                  placeholder="https://youtu.be/... or https://tiktok.com/..."
                   className="mt-2 w-full rounded-xl border border-white/10 bg-bg-primary/80 px-4 py-3 text-sm text-bone outline-none focus:border-accent-purple/60"
                 />
               </div>

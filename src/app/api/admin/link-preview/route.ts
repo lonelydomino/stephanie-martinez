@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { isAdminAuthenticated } from "@/lib/adminAuth";
 import { fetchInstagramThumbnail, isInstagramUrl } from "@/lib/instagram";
+import { isSupportedLinkUrl } from "@/lib/linkPlatforms";
+import { fetchTikTokMetadata, isTikTokUrl } from "@/lib/tiktok";
+import { fetchTumblrMetadata, isTumblrUrl } from "@/lib/tumblr";
 import { fetchYouTubeMetadata, formatYouTubeDate } from "@/lib/youtube";
 import { isYouTubeUrl } from "@/lib/youtubeUtils";
 
@@ -14,6 +17,16 @@ export async function POST(request: Request) {
 
   if (!url) {
     return NextResponse.json({ error: "Paste a link first." }, { status: 400 });
+  }
+
+  if (!isSupportedLinkUrl(url)) {
+    return NextResponse.json(
+      {
+        error:
+          "Only YouTube, Instagram, TikTok, and Tumblr links can be previewed.",
+      },
+      { status: 400 },
+    );
   }
 
   try {
@@ -34,6 +47,30 @@ export async function POST(request: Request) {
       });
     }
 
+    if (isTikTokUrl(url)) {
+      const metadata = await fetchTikTokMetadata(url);
+      if (!metadata) {
+        return NextResponse.json(
+          { error: "Could not load that TikTok post." },
+          { status: 404 },
+        );
+      }
+
+      return NextResponse.json(metadata);
+    }
+
+    if (isTumblrUrl(url)) {
+      const metadata = await fetchTumblrMetadata(url);
+      if (!metadata) {
+        return NextResponse.json(
+          { error: "Could not load that Tumblr post." },
+          { status: 404 },
+        );
+      }
+
+      return NextResponse.json(metadata);
+    }
+
     if (isInstagramUrl(url)) {
       const image = await fetchInstagramThumbnail(url);
       if (!image) {
@@ -50,7 +87,7 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json(
-      { error: "Only YouTube and Instagram links can be previewed." },
+      { error: "Could not preview that link." },
       { status: 400 },
     );
   } catch (error) {

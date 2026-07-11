@@ -5,7 +5,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import { ArrowUpRight, Calendar } from "lucide-react";
 import Image from "next/image";
 import type { BlogPost, PostStatus } from "@/lib/whatsNewPosts";
-import { isYouTubeUrl } from "@/lib/youtubeUtils";
+import { getLinkPlatformLabel } from "@/lib/linkPlatforms";
 import Section from "./ui/Section";
 
 const statusLabels: Record<PostStatus, string> = {
@@ -118,11 +118,7 @@ function BlogCard({ post, index, reduce, large = false, wide = false }: CardProp
               : {})}
             className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-gold transition-colors hover:text-accent-orange"
           >
-            {post.href && isYouTubeUrl(post.href)
-              ? "Watch on YouTube"
-              : post.href?.includes("instagram.com")
-                ? "View on Instagram"
-                : "View recap"}
+            {post.href ? getLinkPlatformLabel(post.href) : "View recap"}
             <ArrowUpRight className="h-3.5 w-3.5" />
           </a>
         </div>
