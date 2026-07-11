@@ -6,8 +6,8 @@ import { isYouTubeUrl } from "./youtubeUtils";
 import {
   type BlogPost,
   type WhatsNewPostSource,
-  whatsNewPostSources,
 } from "./whatsNewPosts";
+import { readPostSources } from "./postsStore";
 
 async function enrichPost(source: WhatsNewPostSource): Promise<BlogPost> {
   if (source.href && isYouTubeUrl(source.href)) {
@@ -69,5 +69,6 @@ async function enrichPost(source: WhatsNewPostSource): Promise<BlogPost> {
 }
 
 export async function getWhatsNewPosts(): Promise<BlogPost[]> {
-  return Promise.all(whatsNewPostSources.map(enrichPost));
+  const sources = await readPostSources();
+  return Promise.all(sources.map(enrichPost));
 }
