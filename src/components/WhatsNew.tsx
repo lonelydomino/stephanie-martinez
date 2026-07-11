@@ -1,225 +1,224 @@
 "use client";
 
 import { motion, useReducedMotion } from "framer-motion";
-import {
-  Calendar,
-  Clapperboard,
-  Ghost,
-  MapPin,
-  Radio,
-  ShoppingBag,
-} from "lucide-react";
-import type { LucideIcon } from "lucide-react";
+import { ArrowUpRight, Calendar, MapPin } from "lucide-react";
+import Image from "next/image";
 import Section from "./ui/Section";
 
-type ActivityStatus = "current" | "upcoming" | "recent";
+type PostStatus = "current" | "upcoming" | "recent";
 
-type Activity = {
+type BlogPost = {
+  slug: string;
   title: string;
-  description: string;
+  excerpt: string;
   when: string;
   location?: string;
   category: string;
-  status: ActivityStatus;
-  Icon: LucideIcon;
+  status: PostStatus;
+  image: string;
+  imageAlt: string;
 };
 
-const statusLabels: Record<ActivityStatus, string> = {
+const statusLabels: Record<PostStatus, string> = {
   current: "Right Now",
   upcoming: "Coming Up",
   recent: "Just Went",
 };
 
-const statusStyles: Record<ActivityStatus, string> = {
+const statusStyles: Record<PostStatus, string> = {
   current:
-    "border-accent-orange/50 bg-accent-orange/10 text-accent-orange shadow-[0_0_20px_color-mix(in_srgb,#D96A16_25%,transparent)]",
+    "border-accent-orange/50 bg-accent-orange/10 text-accent-orange",
   upcoming:
-    "border-accent-purple/40 bg-accent-purple/10 text-gold shadow-[0_0_16px_color-mix(in_srgb,#4A245A_20%,transparent)]",
+    "border-accent-purple/40 bg-accent-purple/10 text-gold",
   recent: "border-white/10 bg-bg-primary/60 text-muted",
 };
 
-const activities: Activity[] = [
+// Swap images in public/blog/ with real event photos — keep filenames or update paths here.
+const posts: BlogPost[] = [
   {
-    title: "Paranormal Investigation Series",
-    description:
-      "Filming overnight sessions, EVPs, and behind-the-scenes footage for a multi-part haunted location series dropping this fall.",
+    slug: "paranormal-investigation-series",
+    title: "Filming a Paranormal Investigation Series",
+    excerpt:
+      "Overnight sessions, EVPs, and behind-the-scenes footage from a legendary haunted location—edited into a multi-part series dropping this fall. Follow along for equipment setups, team reactions, and the moments that still give us chills.",
     when: "Summer 2026",
     location: "West Virginia",
     category: "Investigation",
     status: "current",
-    Icon: Radio,
+    image: "/blog/paranormal-series.jpg",
+    imageAlt: "Dimly lit hallway in an abandoned building during a paranormal investigation",
   },
   {
+    slug: "midsummer-scream-2026",
     title: "Midsummer Scream Horror Convention",
-    description:
-      "Panels, cosplay, vendor hall finds, and meetups with the spooky community—full recap on socials.",
+    excerpt:
+      "Panels, cosplay, vendor hall treasures, and meetups with the spooky community. A full weekend of horror energy—recap posts and haul videos are live on socials.",
     when: "July 2026",
     location: "Long Beach, CA",
     category: "Convention",
     status: "recent",
-    Icon: Ghost,
+    image: "/blog/midsummer-scream.jpg",
+    imageAlt: "Crowd and booths at a horror convention",
   },
   {
+    slug: "horror-film-premiere",
     title: "Horror Film Premiere Night",
-    description:
-      "Red carpet, early screening, and first reactions from one of the summer's most anticipated slashers.",
+    excerpt:
+      "Red carpet looks, an early screening, and first reactions from one of the summer's most anticipated slashers. Watch the premiere vlog for the full night out.",
     when: "June 2026",
     location: "Los Angeles, CA",
     category: "Premiere",
     status: "recent",
-    Icon: Clapperboard,
+    image: "/blog/horror-premiere.jpg",
+    imageAlt: "Movie theater seats before a horror film screening",
   },
   {
-    title: "Anime Expo",
-    description:
-      "Spooky cosplay, horror-anime panels, and convention floor content—catch the daily vlogs on TikTok.",
+    slug: "anime-expo-2026",
+    title: "Anime Expo — Spooky Cosplay & Panels",
+    excerpt:
+      "Horror-anime panels, convention floor content, and spooky cosplay all weekend. Daily vlogs and outfit breakdowns are coming to TikTok.",
     when: "July 2026",
     location: "Los Angeles, CA",
     category: "Convention",
     status: "upcoming",
-    Icon: Ghost,
+    image: "/blog/anime-expo.jpg",
+    imageAlt: "Convention attendees in cosplay",
   },
   {
+    slug: "halloween-in-july-haul",
     title: "Halloween in July Pop-Up Haul",
-    description:
-      "Year-round décor finds, limited-run merch, and a full review of the best spooky staples from the pop-up.",
+    excerpt:
+      "Year-round décor finds, limited-run merch, and a full review of the best spooky staples from the pop-up. Every piece styled and ranked for the haunt-at-home crowd.",
     when: "June 2026",
     location: "Orange County, CA",
     category: "Shopping",
     status: "recent",
-    Icon: ShoppingBag,
+    image: "/blog/halloween-haul.jpg",
+    imageAlt: "Halloween decorations and seasonal merchandise on display",
   },
 ];
 
+function PostMeta({ when, location }: { when: string; location?: string }) {
+  return (
+    <div className="flex flex-wrap gap-4 text-xs text-muted md:text-sm">
+      <span className="inline-flex items-center gap-1.5">
+        <Calendar className="h-3.5 w-3.5 shrink-0 text-accent-orange" />
+        {when}
+      </span>
+      {location && (
+        <span className="inline-flex items-center gap-1.5">
+          <MapPin className="h-3.5 w-3.5 shrink-0 text-accent-orange" />
+          {location}
+        </span>
+      )}
+    </div>
+  );
+}
+
+function StatusBadge({ status }: { status: PostStatus }) {
+  return (
+    <span
+      className={`rounded-full border px-2.5 py-0.5 text-[0.65rem] font-bold uppercase tracking-wider ${statusStyles[status]}`}
+    >
+      {statusLabels[status]}
+    </span>
+  );
+}
+
+type CardProps = {
+  post: BlogPost;
+  index: number;
+  reduce: boolean | null;
+  featured?: boolean;
+};
+
+function BlogCard({ post, index, reduce, featured = false }: CardProps) {
+  return (
+    <motion.article
+      initial={reduce ? false : { opacity: 0, y: featured ? 24 : 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-40px" }}
+      transition={{ delay: featured ? 0 : index * 0.08, duration: 0.55 }}
+      className={`group flex flex-col overflow-hidden rounded-2xl border border-white/8 bg-bg-secondary/50 transition-colors duration-400 hover:border-accent-purple/30 ${
+        featured ? "lg:col-span-2" : ""
+      }`}
+    >
+      <div
+        className={`relative overflow-hidden ${
+          featured ? "aspect-[16/9] md:aspect-[21/9]" : "aspect-[4/3]"
+        }`}
+      >
+        <Image
+          src={post.image}
+          alt={post.imageAlt}
+          fill
+          sizes={
+            featured
+              ? "(max-width: 1024px) 100vw, 66vw"
+              : "(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          }
+          className="object-cover transition-transform duration-700 group-hover:scale-105"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-bg-primary via-bg-primary/20 to-transparent" />
+        <div className="absolute left-4 top-4 flex flex-wrap gap-2">
+          <StatusBadge status={post.status} />
+          <span className="rounded-full border border-white/10 bg-bg-primary/70 px-2.5 py-0.5 text-[0.65rem] font-medium uppercase tracking-widest text-bone/80 backdrop-blur-sm">
+            {post.category}
+          </span>
+        </div>
+      </div>
+
+      <div className={`flex flex-1 flex-col ${featured ? "p-6 md:p-8" : "p-5"}`}>
+        <h3
+          className={`font-display font-semibold text-bone ${
+            featured ? "text-2xl md:text-3xl" : "text-lg md:text-xl"
+          }`}
+        >
+          {post.title}
+        </h3>
+        <p
+          className={`mt-3 flex-1 leading-relaxed text-muted ${
+            featured ? "text-sm md:text-base" : "text-sm line-clamp-3"
+          }`}
+        >
+          {post.excerpt}
+        </p>
+        <div className="mt-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <PostMeta when={post.when} location={post.location} />
+          <a
+            href="#social"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-gold transition-colors hover:text-accent-orange"
+          >
+            View recap
+            <ArrowUpRight className="h-3.5 w-3.5" />
+          </a>
+        </div>
+      </div>
+    </motion.article>
+  );
+}
+
 export default function WhatsNew() {
   const reduce = useReducedMotion();
-  const featured = activities.find((item) => item.status === "current");
-  const rest = activities.filter((item) => item.status !== "current");
+  const featured = posts.find((post) => post.status === "current");
+  const rest = posts.filter((post) => post.status !== "current");
 
   return (
     <Section
       id="whats-new"
       title="What's New"
-      subtitle="What Stephanie's working on, events she's been to, and what's haunting the calendar next."
+      subtitle="A peek at recent adventures, current projects, and what's haunting the calendar next."
       className="bg-gradient-to-b from-transparent via-accent-red/5 to-transparent"
     >
       {featured && (
-        <motion.article
-          initial={reduce ? false : { opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="relative mb-10 overflow-hidden rounded-2xl border border-accent-orange/30 bg-gradient-to-br from-bg-secondary/80 via-bg-primary/60 to-accent-purple/10 p-6 md:p-8"
-        >
-          <div
-            className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full blur-3xl"
-            style={{
-              background:
-                "radial-gradient(circle, color-mix(in srgb, #D96A16 35%, transparent), transparent)",
-            }}
-            aria-hidden
-          />
-          <div className="relative flex flex-col gap-6 md:flex-row md:items-start">
-            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border border-accent-orange/30 bg-bg-primary/70 text-accent-orange">
-              <featured.Icon className="h-8 w-8" strokeWidth={1.5} />
-            </div>
-            <div className="flex-1">
-              <div className="flex flex-wrap items-center gap-3">
-                <span
-                  className={`rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-wider ${statusStyles.current}`}
-                >
-                  {statusLabels.current}
-                </span>
-                <span className="text-xs font-medium uppercase tracking-widest text-muted">
-                  {featured.category}
-                </span>
-              </div>
-              <h3 className="mt-4 font-display text-2xl font-semibold text-bone md:text-3xl">
-                {featured.title}
-              </h3>
-              <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted md:text-base">
-                {featured.description}
-              </p>
-              <div className="mt-5 flex flex-wrap gap-4 text-sm text-muted">
-                <span className="inline-flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-accent-orange" />
-                  {featured.when}
-                </span>
-                {featured.location && (
-                  <span className="inline-flex items-center gap-2">
-                    <MapPin className="h-4 w-4 text-accent-orange" />
-                    {featured.location}
-                  </span>
-                )}
-              </div>
-            </div>
-          </div>
-        </motion.article>
+        <div className="mb-8">
+          <BlogCard post={featured} index={0} reduce={reduce} featured />
+        </div>
       )}
 
-      <div className="relative">
-        <div
-          className="pointer-events-none absolute bottom-0 left-[1.15rem] top-0 hidden w-px bg-gradient-to-b from-accent-purple/60 via-accent-orange/30 to-transparent md:block"
-          aria-hidden
-        />
-
-        <ul className="flex flex-col gap-5">
-          {rest.map((item, i) => (
-            <motion.li
-              key={item.title}
-              initial={reduce ? false : { opacity: 0, x: -16 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true, margin: "-40px" }}
-              transition={{ delay: i * 0.06, duration: 0.5 }}
-            >
-              <article className="group relative rounded-2xl border border-white/8 bg-bg-secondary/50 p-5 transition-colors duration-400 hover:border-accent-purple/30 md:pl-14">
-                <div
-                  className="absolute left-5 top-8 hidden h-3 w-3 rounded-full border-2 border-accent-purple bg-bg-primary shadow-[0_0_12px_color-mix(in_srgb,#4A245A_60%,transparent)] md:block"
-                  aria-hidden
-                />
-
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-white/8 bg-bg-primary/50 text-gold transition-transform duration-500 group-hover:scale-105">
-                    <item.Icon className="h-6 w-6" strokeWidth={1.5} />
-                  </div>
-
-                  <div className="flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span
-                        className={`rounded-full border px-2.5 py-0.5 text-[0.65rem] font-bold uppercase tracking-wider ${statusStyles[item.status]}`}
-                      >
-                        {statusLabels[item.status]}
-                      </span>
-                      <span className="text-[0.65rem] font-medium uppercase tracking-widest text-muted/80">
-                        {item.category}
-                      </span>
-                    </div>
-
-                    <h3 className="mt-2 font-display text-lg font-semibold text-bone md:text-xl">
-                      {item.title}
-                    </h3>
-                    <p className="mt-2 text-sm leading-relaxed text-muted">
-                      {item.description}
-                    </p>
-
-                    <div className="mt-3 flex flex-wrap gap-4 text-xs text-muted">
-                      <span className="inline-flex items-center gap-1.5">
-                        <Calendar className="h-3.5 w-3.5" />
-                        {item.when}
-                      </span>
-                      {item.location && (
-                        <span className="inline-flex items-center gap-1.5">
-                          <MapPin className="h-3.5 w-3.5" />
-                          {item.location}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </article>
-            </motion.li>
-          ))}
-        </ul>
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {rest.map((post, i) => (
+          <BlogCard key={post.slug} post={post} index={i} reduce={reduce} />
+        ))}
       </div>
     </Section>
   );
