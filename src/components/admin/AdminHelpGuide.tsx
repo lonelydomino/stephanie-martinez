@@ -31,6 +31,7 @@ const GUIDE_SECTIONS = [
     title: "Cover image",
     items: [
       "The thumbnail from your link is used automatically — you can leave cover as is.",
+      "No link yet? A spooky placeholder shows in the preview until you paste a link or upload a cover.",
       "Upload your own picture if you prefer, or click and drag the preview to reposition it.",
       "Use the zoom slider if you need a tighter crop.",
     ],

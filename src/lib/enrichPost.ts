@@ -1,4 +1,8 @@
 import type { BlogPost, PostSize, WhatsNewPostSource } from "./whatsNewPosts";
+import {
+  COVER_PLACEHOLDER_ALT,
+  COVER_PLACEHOLDER_PATH,
+} from "./coverPlaceholder";
 import { fetchInstagramThumbnail, isInstagramUrl } from "./instagram";
 import { fetchTikTokMetadata, isTikTokUrl } from "./tiktok";
 import { fetchTumblrMetadata, isTumblrUrl } from "./tumblr";
@@ -86,8 +90,17 @@ export async function enrichPost(source: WhatsNewPostSource): Promise<BlogPost> 
     }
   }
 
-  const image = source.coverImage ?? scrapedImage ?? source.image ?? "";
+  const image =
+    source.coverImage?.trim() ||
+    scrapedImage ||
+    source.image?.trim() ||
+    COVER_PLACEHOLDER_PATH;
   const size: PostSize = source.size ?? "small";
+  imageAlt =
+    imageAlt?.trim() ||
+    title?.trim() ||
+    source.excerpt?.trim() ||
+    COVER_PLACEHOLDER_ALT;
 
   if (!title || !when || !image || !imageAlt) {
     throw new Error(
