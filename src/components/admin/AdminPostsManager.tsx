@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -67,9 +67,20 @@ export default function AdminPostsManager({ initialPosts }: Props) {
   const [previewing, setPreviewing] = useState(false);
   const [preview, setPreview] = useState<LinkPreview | null>(null);
   const [uploadingCover, setUploadingCover] = useState(false);
+  const previewRequestId = useRef(0);
+  const hrefDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const selectedIndex = posts.findIndex((post) => post.slug === selectedSlug);
   const selectedPost = selectedIndex >= 0 ? posts[selectedIndex] : null;
+
+  useEffect(() => {
+    previewRequestId.current += 1;
+    setPreview(null);
+    if (hrefDebounceRef.current) {
+      clearTimeout(hrefDebounceRef.current);
+      hrefDebounceRef.current = null;
+    }
+  }, [selectedSlug]);
 
   const dirty = useMemo(
     () => JSON.stringify(posts) !== JSON.stringify(initialPosts),
@@ -90,8 +101,7 @@ export default function AdminPostsManager({ initialPosts }: Props) {
   function addPost() {
     const post = emptyPost();
     setPosts((current) => [post, ...current]);
-    setSelectedSlug(post.slug || "__new__");
-    setPreview(null);
+    selectPost(post.slug || "__new__");
   }
 
   function deletePost(index: number) {
@@ -99,7 +109,7 @@ export default function AdminPostsManager({ initialPosts }: Props) {
     const next = posts.filter((_, postIndex) => postIndex !== index);
     setPosts(next);
     if (selectedSlug === slug || selectedSlug === "__new__") {
-      setSelectedSlug(next[0]?.slug ?? null);
+      selectPost(next[0]?.slug ?? null);
     }
   }
 
@@ -112,40 +122,104 @@ export default function AdminPostsManager({ initialPosts }: Props) {
     setPosts(next);
   }
 
+  function selectPost(slug: string | null) {
+    setSelectedSlug(slug);
+    setMessage("");
+    setError("");
+  }
+
+  async function fetchLinkPreview(href: string) {
+    const trimmed = href.trim();
+    if (!trimmed) {
+      setPreview(null);
+      return;
+    }
+
+    const requestId = previewRequestId.current + 1;
+    previewRequestId.current = requestId;
+
+    setPreviewing(true);
+    setError("");
+    setMessage("");
+
+    try {
+      const response = await fetch("/api/admin/link-preview", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: trimmed }),
+      });
+
+      if (requestId !== previewRequestId.current) return;
+
+      if (!response.ok) {
+        const data = (await response.json()) as { error?: string };
+        setError(data.error ?? "Could not load link preview.");
+        return;
+      }
+
+      const data = (await response.json()) as LinkPreview;
+      if (requestId !== previewRequestId.current) return;
+
+      setPreview(data);
+
+      if (selectedIndex < 0) return;
+
+      setPosts((current) =>
+        current.map((post, index) =>
+          index === selectedIndex
+            ? {
+                ...post,
+                title: data.title ?? post.title,
+                when: data.when ?? post.when,
+                image: data.image,
+                imageAlt: data.imageAlt ?? post.imageAlt,
+                slug: post.slug || slugify(data.title ?? post.excerpt),
+              }
+            : post,
+        ),
+      );
+    } finally {
+      if (requestId === previewRequestId.current) {
+        setPreviewing(false);
+      }
+    }
+  }
+
+  function scheduleLinkPreview(href: string) {
+    if (hrefDebounceRef.current) {
+      clearTimeout(hrefDebounceRef.current);
+    }
+
+    const trimmed = href.trim();
+    if (!trimmed) {
+      setPreview(null);
+      return;
+    }
+
+    hrefDebounceRef.current = setTimeout(() => {
+      hrefDebounceRef.current = null;
+      void fetchLinkPreview(trimmed);
+    }, 600);
+  }
+
+  function handleHrefChange(href: string) {
+    updateSelected({ href });
+    setPreview(null);
+    scheduleLinkPreview(href);
+  }
+
   async function previewLink() {
     if (!selectedPost?.href?.trim()) {
       setError("Paste a YouTube or Instagram link first.");
       return;
     }
 
-    setPreviewing(true);
-    setError("");
-    setMessage("");
-
-    const response = await fetch("/api/admin/link-preview", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ url: selectedPost.href }),
-    });
-
-    setPreviewing(false);
-
-    if (!response.ok) {
-      const data = (await response.json()) as { error?: string };
-      setError(data.error ?? "Could not load link preview.");
-      return;
+    if (hrefDebounceRef.current) {
+      clearTimeout(hrefDebounceRef.current);
+      hrefDebounceRef.current = null;
     }
 
-    const data = (await response.json()) as LinkPreview;
-    setPreview(data);
-
-    updateSelected({
-      title: data.title ?? selectedPost.title,
-      when: data.when ?? selectedPost.when,
-      image: data.image,
-      imageAlt: data.imageAlt ?? selectedPost.imageAlt,
-      slug: selectedPost.slug || slugify(data.title ?? selectedPost.excerpt),
-    });
+    await fetchLinkPreview(selectedPost.href);
   }
 
   async function uploadCover(file: File) {
@@ -315,7 +389,7 @@ export default function AdminPostsManager({ initialPosts }: Props) {
               >
                 <button
                   type="button"
-                  onClick={() => setSelectedSlug(post.slug || "__new__")}
+                  onClick={() => selectPost(post.slug || "__new__")}
                   className="w-full text-left"
                 >
                   <p className="font-medium text-bone">
@@ -367,8 +441,9 @@ export default function AdminPostsManager({ initialPosts }: Props) {
               Edit post
             </h2>
             <p className="mt-1 text-sm text-muted">
-              Paste a YouTube or Instagram link and click Preview. Custom cover
-              images override scraped thumbnails.
+              Paste a YouTube or Instagram link — title, date, and thumbnail
+              fill in automatically. Custom cover images override scraped
+              thumbnails.
             </p>
 
             <div className="mt-6 space-y-5">
@@ -421,9 +496,7 @@ export default function AdminPostsManager({ initialPosts }: Props) {
                 <div className="mt-2 flex flex-col gap-2 sm:flex-row">
                   <input
                     value={selectedPost.href ?? ""}
-                    onChange={(event) =>
-                      updateSelected({ href: event.target.value })
-                    }
+                    onChange={(event) => handleHrefChange(event.target.value)}
                     placeholder="https://youtu.be/... or https://instagram.com/..."
                     className="w-full flex-1 rounded-xl border border-white/10 bg-bg-primary/80 px-4 py-3 text-sm text-bone outline-none focus:border-accent-purple/60"
                   />
@@ -434,7 +507,7 @@ export default function AdminPostsManager({ initialPosts }: Props) {
                     className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 px-4 py-3 text-sm font-medium text-bone hover:border-accent-purple/40 disabled:opacity-50"
                   >
                     <Play className="h-4 w-4 text-accent-orange" />
-                    {previewing ? "Loading…" : "Preview link"}
+                    {previewing ? "Loading…" : "Refresh"}
                   </button>
                 </div>
               </div>
@@ -483,6 +556,7 @@ export default function AdminPostsManager({ initialPosts }: Props) {
                 selectedPost.image) && (
                 <div className="relative aspect-[16/9] overflow-hidden rounded-xl border border-white/10 md:aspect-[21/9]">
                   <Image
+                    key={`${selectedSlug}-${selectedPost.coverImage || preview?.image || selectedPost.image}`}
                     src={
                       selectedPost.coverImage ||
                       preview?.image ||
@@ -494,6 +568,11 @@ export default function AdminPostsManager({ initialPosts }: Props) {
                     className="object-cover"
                     sizes="(max-width: 768px) 100vw, 600px"
                   />
+                  {previewing && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-bg-primary/60 text-sm text-bone">
+                      Loading preview…
+                    </div>
+                  )}
                 </div>
               )}
 
