@@ -4,7 +4,6 @@ import { useCallback, useRef, useState } from "react";
 import Image from "next/image";
 import { RotateCcw } from "lucide-react";
 import {
-  DEFAULT_COVER_POSITION,
   DEFAULT_COVER_ZOOM,
   MAX_COVER_ZOOM,
   MIN_COVER_ZOOM,
@@ -177,12 +176,7 @@ export default function CoverFramingEditor({
 
       <p className="text-xs text-muted">
         Click and drag the image to slide it into place. Zoom in if the thumbnail
-        needs a tighter crop. Framing is saved with the post (
-        {position ?? DEFAULT_COVER_POSITION}
-        {activeZoom > DEFAULT_COVER_ZOOM
-          ? `, ${Math.round(activeZoom * 100)}% zoom`
-          : ""}
-        ).
+        needs a tighter crop. Framing is saved with the post when you save.
       </p>
     </div>
   );
