@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { HelpCircle } from "lucide-react";
 
 type FieldHelpProps = {
@@ -8,11 +8,37 @@ type FieldHelpProps = {
 };
 
 export function FieldHelp({ text }: FieldHelpProps) {
+  const rootRef = useRef<HTMLSpanElement>(null);
   const [open, setOpen] = useState(false);
+  const [shown, setShown] = useState(false);
   const helpId = useId();
 
+  useEffect(() => {
+    if (open) {
+      setShown(true);
+      return;
+    }
+
+    if (!shown) return;
+
+    const timer = window.setTimeout(() => setShown(false), 200);
+    return () => window.clearTimeout(timer);
+  }, [open, shown]);
+
+  useEffect(() => {
+    if (!open) return;
+
+    const onPointerDown = (event: PointerEvent) => {
+      if (rootRef.current?.contains(event.target as Node)) return;
+      setOpen(false);
+    };
+
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => document.removeEventListener("pointerdown", onPointerDown);
+  }, [open]);
+
   return (
-    <span className="relative inline-flex shrink-0">
+    <span ref={rootRef} className="relative inline-flex shrink-0">
       <button
         type="button"
         onClick={() => setOpen((current) => !current)}
@@ -23,11 +49,15 @@ export function FieldHelp({ text }: FieldHelpProps) {
       >
         <HelpCircle className="h-3.5 w-3.5" />
       </button>
-      {open && (
+      {shown && (
         <span
           id={helpId}
           role="tooltip"
-          className="absolute left-0 top-full z-20 mt-2 w-64 max-w-[calc(100vw-3rem)] rounded-xl border border-sky-500/35 bg-bg-primary px-3 py-2.5 text-left text-xs leading-relaxed text-sky-200 shadow-[0_8px_24px_rgba(0,0,0,0.35)]"
+          className={`absolute left-0 top-full z-20 mt-2 w-64 max-w-[calc(100vw-3rem)] rounded-xl border border-sky-500/35 bg-bg-primary px-3 py-2.5 text-left text-xs leading-relaxed text-sky-200 shadow-[0_8px_24px_rgba(0,0,0,0.35)] transition-all duration-200 ease-out ${
+            open
+              ? "translate-y-0 scale-100 opacity-100"
+              : "pointer-events-none -translate-y-1 scale-95 opacity-0"
+          }`}
         >
           {text}
         </span>
