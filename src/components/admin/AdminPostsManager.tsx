@@ -15,6 +15,7 @@ import {
   Trash2,
 } from "lucide-react";
 import Logo from "@/components/Logo";
+import { FieldHelp, FieldLabel } from "@/components/admin/FieldHelp";
 import {
   clearPendingDeploy,
   loadPendingDeploy,
@@ -618,6 +619,7 @@ export default function AdminPostsManager({
           <Plus className="h-4 w-4" />
           Add post
         </button>
+        <FieldHelp text="Start a new blog card for the What's New section. Pick it from the list on the left to fill in the link, description, and image." />
       </div>
 
       {deployingSlugs.size > 0 && (
@@ -762,21 +764,32 @@ export default function AdminPostsManager({
                     : "Saved covers and linked posts show their preview right away. Paste a new YouTube or Instagram link to update title, date, and thumbnail automatically."}
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={saveCurrentPost}
-                disabled={saving || !hasUnsavedChanges}
-                className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-accent-orange px-4 py-2.5 text-sm font-semibold text-bone hover:opacity-90 disabled:opacity-50"
-              >
-                <Save className="h-4 w-4" />
-                {saving
-                  ? isCreating
-                    ? "Creating…"
-                    : "Saving…"
-                  : isCreating
-                    ? "Create post"
-                    : "Save post"}
-              </button>
+              <div className="flex flex-col items-stretch gap-2 sm:items-end">
+                <div className="flex items-center justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={saveCurrentPost}
+                    disabled={saving || !hasUnsavedChanges}
+                    className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-accent-orange px-4 py-2.5 text-sm font-semibold text-bone hover:opacity-90 disabled:opacity-50"
+                  >
+                    <Save className="h-4 w-4" />
+                    {saving
+                      ? isCreating
+                        ? "Creating…"
+                        : "Saving…"
+                      : isCreating
+                        ? "Create post"
+                        : "Save post"}
+                  </button>
+                  <FieldHelp
+                    text={
+                      isCreating
+                        ? "Creates this new post on the website. After saving, allow 1–2 minutes for the live site to update."
+                        : "Saves your changes to this post. After saving, allow 1–2 minutes for the live site to update."
+                    }
+                  />
+                </div>
+              </div>
             </div>
 
             {hasUnsavedChanges && !saving && (
@@ -790,10 +803,13 @@ export default function AdminPostsManager({
             <div className="mt-6 space-y-5">
               <div className="grid gap-5 sm:grid-cols-2">
                 <div>
-                  <label className="text-sm font-medium text-bone">
-                    Card size
-                  </label>
+                  <FieldLabel
+                    htmlFor="post-card-size"
+                    label="Card size"
+                    help="Large cards are wide featured spots at the top of What's New. Small cards appear in the grid with your other posts."
+                  />
                   <select
+                    id="post-card-size"
                     value={selectedPost.size ?? "small"}
                     onChange={(event) =>
                       updateSelected({
@@ -811,8 +827,13 @@ export default function AdminPostsManager({
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-bone">Status</label>
+                  <FieldLabel
+                    htmlFor="post-status"
+                    label="Status"
+                    help="Right Now = something current. Just Went = already posted. Coming Up = on the calendar soon. This shows as a small colored tag on the card."
+                  />
                   <select
+                    id="post-status"
                     value={selectedPost.status}
                     onChange={(event) =>
                       updateSelected({
@@ -831,10 +852,13 @@ export default function AdminPostsManager({
               </div>
 
               <div>
-                <label className="text-sm font-medium text-bone">
-                  YouTube or Instagram link
-                </label>
+                <FieldLabel
+                  htmlFor="post-link"
+                  label="YouTube or Instagram link"
+                  help="Paste the full web address from YouTube or Instagram. The site will automatically fill in the title, date, and thumbnail image."
+                />
                 <input
+                  id="post-link"
                   value={selectedPost.href ?? ""}
                   onChange={(event) => handleHrefChange(event.target.value)}
                   placeholder="https://youtu.be/... or https://instagram.com/..."
@@ -843,13 +867,10 @@ export default function AdminPostsManager({
               </div>
 
               <div>
-                <label className="text-sm font-medium text-bone">
-                  Cover image (optional)
-                </label>
-                <p className="mt-1 text-xs text-muted">
-                  Upload a custom cover, or leave empty to use the scraped
-                  thumbnail from the link.
-                </p>
+                <FieldLabel
+                  label="Cover image (optional)"
+                  help="Upload your own picture if you do not want the automatic thumbnail from the link. This is optional — you can leave it blank."
+                />
                 <div className="mt-3 flex flex-wrap items-center gap-3">
                   <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-white/10 px-4 py-2.5 text-sm text-bone hover:border-accent-purple/40">
                     <input
@@ -900,10 +921,13 @@ export default function AdminPostsManager({
               )}
 
               <div>
-                <label className="text-sm font-medium text-bone">
-                  Short description
-                </label>
+                <FieldLabel
+                  htmlFor="post-excerpt"
+                  label="Short description"
+                  help="Write a few sentences about this post. Visitors see this text on the website. You need a description before you can save."
+                />
                 <textarea
+                  id="post-excerpt"
                   value={selectedPost.excerpt}
                   onChange={(event) =>
                     updateSelected({ excerpt: event.target.value })
@@ -917,10 +941,13 @@ export default function AdminPostsManager({
 
               <div className="grid gap-5 sm:grid-cols-2">
                 <div>
-                  <label className="text-sm font-medium text-bone">
-                    Category
-                  </label>
+                  <FieldLabel
+                    htmlFor="post-category"
+                    label="Category"
+                    help="Choose the type that fits best, like Investigation or Convention. This appears as a small label on the card."
+                  />
                   <select
+                    id="post-category"
                     value={selectedPost.category}
                     onChange={(event) =>
                       updateSelected({ category: event.target.value })
@@ -937,13 +964,20 @@ export default function AdminPostsManager({
               </div>
 
               <details className="rounded-xl border border-white/8 bg-bg-primary/40 p-4">
-                <summary className="cursor-pointer text-sm font-medium text-gold">
-                  Optional overrides
+                <summary className="flex cursor-pointer list-none items-center gap-2 text-sm font-medium text-gold [&::-webkit-details-marker]:hidden">
+                  <span>Optional overrides</span>
+                  <FieldHelp text="Only use these if you want to change the title or date text from what was pulled in automatically. Most people can leave these alone." />
                 </summary>
                 <div className="mt-4 space-y-4">
                   <div>
-                    <label className="text-sm text-muted">Title</label>
+                    <FieldLabel
+                      htmlFor="post-title-override"
+                      label="Title"
+                      help="Change the headline shown on the website. Leave blank to keep the title from YouTube or Instagram."
+                      muted
+                    />
                     <input
+                      id="post-title-override"
                       value={selectedPost.title ?? ""}
                       onChange={(event) =>
                         updateSelected({ title: event.target.value })
@@ -952,8 +986,14 @@ export default function AdminPostsManager({
                     />
                   </div>
                   <div>
-                    <label className="text-sm text-muted">Date label</label>
+                    <FieldLabel
+                      htmlFor="post-date-override"
+                      label="Date label"
+                      help="The date text shown on the card, like 'July 2026'. Edit this only if you want different wording."
+                      muted
+                    />
                     <input
+                      id="post-date-override"
                       value={selectedPost.when ?? ""}
                       onChange={(event) =>
                         updateSelected({ when: event.target.value })
