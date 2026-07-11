@@ -691,7 +691,7 @@ export default function AdminPostsManager({
 
               <div>
                 <label className="text-sm font-medium text-bone">
-                  Cover image
+                  Cover image (optional)
                 </label>
                 <p className="mt-1 text-xs text-muted">
                   Upload a custom cover, or leave empty to use the scraped
