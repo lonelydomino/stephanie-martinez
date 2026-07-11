@@ -20,6 +20,11 @@ import AdminHelpGuide from "@/components/admin/AdminHelpGuide";
 import { FieldHelp, FieldLabel } from "@/components/admin/FieldHelp";
 import { normalizeCoverZoom } from "@/lib/coverFraming";
 import {
+  COVER_PLACEHOLDER_ALT,
+  isCoverPlaceholder,
+  resolveCoverImage,
+} from "@/lib/coverPlaceholder";
+import {
   clearPendingDeploy,
   loadPendingDeploy,
   savePendingDeploy,
@@ -44,13 +49,12 @@ function postPreviewImage(
   resolvedPreviews: Record<string, ResolvedPostPreview>,
   livePreview: LinkPreview | null,
 ): string {
-  return (
-    post.coverImage?.trim() ||
-    post.image?.trim() ||
-    (post.slug ? resolvedPreviews[post.slug]?.image : "") ||
-    livePreview?.image ||
-    ""
-  );
+  return resolveCoverImage([
+    post.coverImage,
+    post.image,
+    post.slug ? resolvedPreviews[post.slug]?.image : undefined,
+    livePreview?.image,
+  ]);
 }
 
 type LinkPreview = {
@@ -247,8 +251,13 @@ export default function AdminPostsManager({
   useEffect(() => {
     if (!selectedPost) return;
 
-    const existingImage = postPreviewImage(selectedPost, resolvedPreviews, null);
-    if (existingImage) return;
+    const hasImage = !isCoverPlaceholder(
+      selectedPost.coverImage ||
+        selectedPost.image ||
+        (selectedPost.slug ? resolvedPreviews[selectedPost.slug]?.image : "") ||
+        null,
+    );
+    if (hasImage) return;
 
     const href = selectedPost.href?.trim();
     if (!href) return;
@@ -591,6 +600,14 @@ export default function AdminPostsManager({
   const selectedDisplayImage = selectedPost
     ? postPreviewImage(selectedPost, resolvedPreviews, preview)
     : "";
+  const showingPlaceholder = selectedPost
+    ? isCoverPlaceholder(
+        selectedPost.coverImage ||
+          selectedPost.image ||
+          (selectedPost.slug ? resolvedPreviews[selectedPost.slug]?.image : "") ||
+          preview?.image,
+      )
+    : false;
   const isCreating =
     selectedPost != null && isNewDraft(selectedPost, savedPosts);
 
@@ -936,20 +953,32 @@ export default function AdminPostsManager({
                 )}
               </div>
 
-              {selectedDisplayImage && (
-                <CoverFramingEditor
-                  imageSrc={selectedDisplayImage}
-                  imageAlt={selectedPost.title || "Cover preview"}
-                  position={selectedPost.coverPosition}
-                  zoom={selectedPost.coverZoom}
-                  aspectClassName={
-                    selectedPost.size === "large"
-                      ? "aspect-[16/9] md:aspect-[21/9]"
-                      : "aspect-[16/9]"
-                  }
-                  loading={previewing}
-                  onChange={(update) => updateSelected(update)}
-                />
+              {selectedPost && (
+                <div className="space-y-2">
+                  {showingPlaceholder && (
+                    <p className="text-xs text-muted">
+                      This spooky placeholder shows until you paste a link or
+                      upload a cover image.
+                    </p>
+                  )}
+                  <CoverFramingEditor
+                    imageSrc={selectedDisplayImage}
+                    imageAlt={
+                      selectedPost.title ||
+                      selectedPost.excerpt ||
+                      COVER_PLACEHOLDER_ALT
+                    }
+                    position={selectedPost.coverPosition}
+                    zoom={selectedPost.coverZoom}
+                    aspectClassName={
+                      selectedPost.size === "large"
+                        ? "aspect-[16/9] md:aspect-[21/9]"
+                        : "aspect-[16/9]"
+                    }
+                    loading={previewing}
+                    onChange={(update) => updateSelected(update)}
+                  />
+                </div>
               )}
 
               <div>
