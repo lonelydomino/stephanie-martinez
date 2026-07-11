@@ -100,7 +100,6 @@ function findSavedIndex(
 
 function isPostDirty(
   post: WhatsNewPostSource,
-  index: number,
   savedPosts: WhatsNewPostSource[],
 ): boolean {
   if (!post.slug?.trim()) {
@@ -116,12 +115,10 @@ function isPostDirty(
   const savedIndex = findSavedIndex(post, savedPosts);
   if (savedIndex < 0) return true;
 
-  const orderDirty = savedIndex !== index;
-  const fieldDirty =
+  return (
     JSON.stringify(normalizePost(post)) !==
-    JSON.stringify(normalizePost(savedPosts[savedIndex]));
-
-  return orderDirty || fieldDirty;
+    JSON.stringify(normalizePost(savedPosts[savedIndex]))
+  );
 }
 
 type PendingNavigation = {
@@ -522,7 +519,7 @@ export default function AdminPostsManager({
             const active =
               selectedSlug === post.slug ||
               (selectedSlug === "__new__" && !post.slug && index === selectedIndex);
-            const postDirty = isPostDirty(post, index, savedPosts);
+            const postDirty = isPostDirty(post, savedPosts);
 
             return (
               <div
@@ -556,7 +553,7 @@ export default function AdminPostsManager({
                       {postDirty && !active && (
                         <span
                           className="h-2 w-2 rounded-full bg-accent-orange shadow-[0_0_8px_color-mix(in_srgb,var(--accent-orange)_60%,transparent)]"
-                          title="Unsaved changes"
+                          title="Unsaved edits on this post"
                         />
                       )}
                       {active && (
