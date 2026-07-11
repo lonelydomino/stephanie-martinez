@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useReducedMotion } from "framer-motion";
-import { ArrowUpRight, Calendar, MapPin } from "lucide-react";
+import { ArrowUpRight, Calendar } from "lucide-react";
 import Image from "next/image";
 import Section from "./ui/Section";
 
@@ -12,11 +12,11 @@ type BlogPost = {
   title: string;
   excerpt: string;
   when: string;
-  location?: string;
   category: string;
   status: PostStatus;
   image: string;
   imageAlt: string;
+  href?: string;
 };
 
 const statusLabels: Record<PostStatus, string> = {
@@ -41,11 +41,11 @@ const posts: BlogPost[] = [
     excerpt:
       "Overnight sessions, EVPs, and behind-the-scenes footage from a legendary haunted location—edited into a multi-part series dropping this fall. Follow along for equipment setups, team reactions, and the moments that still give us chills.",
     when: "Summer 2026",
-    location: "West Virginia",
     category: "Investigation",
     status: "current",
     image: "/blog/paranormal-series.jpg",
     imageAlt: "Dimly lit hallway in an abandoned building during a paranormal investigation",
+    href: "https://youtu.be/3UlpjWwiyJM",
   },
   {
     slug: "midsummer-scream-2026",
@@ -53,7 +53,6 @@ const posts: BlogPost[] = [
     excerpt:
       "Panels, cosplay, vendor hall treasures, and meetups with the spooky community. A full weekend of horror energy—recap posts and haul videos are live on socials.",
     when: "July 2026",
-    location: "Long Beach, CA",
     category: "Convention",
     status: "recent",
     image: "/blog/midsummer-scream.jpg",
@@ -65,7 +64,6 @@ const posts: BlogPost[] = [
     excerpt:
       "Red carpet looks, an early screening, and first reactions from one of the summer's most anticipated slashers. Watch the premiere vlog for the full night out.",
     when: "June 2026",
-    location: "Los Angeles, CA",
     category: "Premiere",
     status: "recent",
     image: "/blog/horror-premiere.jpg",
@@ -77,7 +75,6 @@ const posts: BlogPost[] = [
     excerpt:
       "Horror-anime panels, convention floor content, and spooky cosplay all weekend. Daily vlogs and outfit breakdowns are coming to TikTok.",
     when: "July 2026",
-    location: "Los Angeles, CA",
     category: "Convention",
     status: "upcoming",
     image: "/blog/anime-expo.jpg",
@@ -89,7 +86,6 @@ const posts: BlogPost[] = [
     excerpt:
       "Year-round décor finds, limited-run merch, and a full review of the best spooky staples from the pop-up. Every piece styled and ranked for the haunt-at-home crowd.",
     when: "June 2026",
-    location: "Orange County, CA",
     category: "Shopping",
     status: "recent",
     image: "/blog/halloween-haul.jpg",
@@ -97,20 +93,12 @@ const posts: BlogPost[] = [
   },
 ];
 
-function PostMeta({ when, location }: { when: string; location?: string }) {
+function PostMeta({ when }: { when: string }) {
   return (
-    <div className="flex flex-wrap gap-4 text-xs text-muted md:text-sm">
-      <span className="inline-flex items-center gap-1.5">
-        <Calendar className="h-3.5 w-3.5 shrink-0 text-accent-orange" />
-        {when}
-      </span>
-      {location && (
-        <span className="inline-flex items-center gap-1.5">
-          <MapPin className="h-3.5 w-3.5 shrink-0 text-accent-orange" />
-          {location}
-        </span>
-      )}
-    </div>
+    <span className="inline-flex items-center gap-1.5 text-xs text-muted md:text-sm">
+      <Calendar className="h-3.5 w-3.5 shrink-0 text-accent-orange" />
+      {when}
+    </span>
   );
 }
 
@@ -183,12 +171,15 @@ function BlogCard({ post, index, reduce, featured = false }: CardProps) {
           {post.excerpt}
         </p>
         <div className="mt-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <PostMeta when={post.when} location={post.location} />
+          <PostMeta when={post.when} />
           <a
-            href="#social"
+            href={post.href ?? "#social"}
+            {...(post.href
+              ? { target: "_blank", rel: "noopener noreferrer" }
+              : {})}
             className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-gold transition-colors hover:text-accent-orange"
           >
-            View recap
+            {post.href?.includes("youtu") ? "Watch on YouTube" : "View recap"}
             <ArrowUpRight className="h-3.5 w-3.5" />
           </a>
         </div>
