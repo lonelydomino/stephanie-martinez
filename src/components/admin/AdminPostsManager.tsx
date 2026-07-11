@@ -806,7 +806,7 @@ export default function AdminPostsManager({
                   <FieldLabel
                     htmlFor="post-card-size"
                     label="Card size"
-                    help="Large cards are wide featured spots at the top of What's New. Small cards appear in the grid with your other posts."
+                    help="Controls how wide this card looks on the website. Large makes a wide card. Small makes a regular-sized card in the grid next to your other posts."
                   />
                   <select
                     id="post-card-size"
