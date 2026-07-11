@@ -41,7 +41,6 @@ export default function CoverFramingEditor({
   const frameRef = useRef<HTMLDivElement>(null);
   const dragStartRef = useRef<DragStart | null>(null);
   const [dragging, setDragging] = useState(false);
-  const focus = parseCoverPosition(position);
   const activeZoom = zoom ?? DEFAULT_COVER_ZOOM;
   const hasCustomFraming =
     position !== undefined ||
@@ -124,12 +123,6 @@ export default function CoverFramingEditor({
           style={imageStyle}
           sizes="(max-width: 768px) 100vw, 600px"
           draggable={false}
-        />
-
-        <div
-          className="pointer-events-none absolute z-10 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-bone bg-accent-orange/80 shadow-[0_0_0_2px_rgba(0,0,0,0.35)]"
-          style={{ left: `${focus.x}%`, top: `${focus.y}%` }}
-          aria-hidden
         />
 
         {loading && (
