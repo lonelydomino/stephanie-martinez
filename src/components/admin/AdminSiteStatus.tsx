@@ -25,9 +25,9 @@ export default function AdminSiteStatus({ status }: Props) {
       {deploying ? (
         <>
           <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
-          <span>Deploying</span>
+          <span>Publishing</span>
           <span className="hidden text-xs text-sky-300/80 sm:inline">
-            Publishing to live site…
+            Updating live site…
           </span>
         </>
       ) : (

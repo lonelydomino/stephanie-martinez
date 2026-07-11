@@ -1,7 +1,11 @@
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { NextResponse } from "next/server";
 import { isAdminAuthenticated } from "@/lib/adminAuth";
-import { readPostSources, writePostSources } from "@/lib/postsStore";
+import {
+  POSTS_CACHE_TAG,
+  readPostSources,
+  writePostSources,
+} from "@/lib/postsStore";
 import type { WhatsNewPostSource } from "@/lib/whatsNewPosts";
 
 export async function GET() {
@@ -42,6 +46,7 @@ export async function PUT(request: Request) {
 
   try {
     const mode = await writePostSources(posts);
+    revalidateTag(POSTS_CACHE_TAG, "seconds");
     revalidatePath("/");
 
     return NextResponse.json({
@@ -49,7 +54,7 @@ export async function PUT(request: Request) {
       mode,
       message:
         mode === "github"
-          ? "Saved! Your site will update in about 1–2 minutes after Vercel redeploys."
+          ? "Saved! Your changes should appear on the live site within a few seconds."
           : "Saved locally.",
     });
   } catch (error) {
