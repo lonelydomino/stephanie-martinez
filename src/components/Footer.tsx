@@ -22,7 +22,10 @@ export default function Footer() {
           <Logo size="footer" />
         </div>
         <p className="font-display text-lg font-semibold tracking-wide text-bone">
-          © 2026 Stephanie Martinez
+          © 2026 Simply Spooky Stephanie
+        </p>
+        <p className="mt-1 text-xs tracking-wide text-muted/80">
+          Stephanie Martinez
         </p>
         <p className="mt-2 text-sm italic text-muted">
           Keeping Halloween alive every day of the year.

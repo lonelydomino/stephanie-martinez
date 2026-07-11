@@ -19,11 +19,11 @@ const poppins = Poppins({
 export const metadata: Metadata = {
   metadataBase: new URL("https://stephanie-martinez.vercel.app"),
   title: {
-    default: "Stephanie Martinez | Spooky Creator — Halloween All Year",
-    template: "%s | Stephanie Martinez",
+    default: "Simply Spooky Stephanie | Halloween All Year",
+    template: "%s | Simply Spooky Stephanie",
   },
   description:
-    "Stephanie Martinez — spooky lifestyle creator celebrating Halloween every day. Haunted locations, paranormal adventures, Halloween fashion, horror conventions, and spooky décor.",
+    "Simply Spooky Stephanie — spooky lifestyle creator celebrating Halloween every day. Haunted locations, paranormal adventures, Halloween fashion, horror conventions, and spooky décor.",
   keywords: [
     "Halloween Creator",
     "Spooky Lifestyle",
@@ -35,6 +35,7 @@ export const metadata: Metadata = {
     "Anime Conventions",
     "Spooky Décor",
     "Halloween All Year",
+    "Simply Spooky Stephanie",
     "Stephanie Martinez",
   ],
   authors: [{ name: "Stephanie Martinez" }],
@@ -43,24 +44,24 @@ export const metadata: Metadata = {
     apple: "/logo.png",
   },
   openGraph: {
-    title: "Stephanie Martinez | Spooky Creator",
+    title: "Simply Spooky Stephanie | Spooky Creator",
     description:
       "Exploring haunted places, spooky fashion, paranormal adventures, and everything creepy — 365 days a year.",
     type: "website",
     locale: "en_US",
-    siteName: "Stephanie Martinez",
+    siteName: "Simply Spooky Stephanie",
     images: [
       {
         url: "/logo.png",
         width: 1024,
         height: 1024,
-        alt: "@SimplySpookyStephanie",
+        alt: "Simply Spooky Stephanie",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Stephanie Martinez | Spooky Creator",
+    title: "Simply Spooky Stephanie | Spooky Creator",
     description:
       "Halloween all year long — haunted locations, fashion, conventions & paranormal adventures.",
     images: ["/logo.png"],

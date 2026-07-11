@@ -62,14 +62,14 @@ export default function Navbar() {
         >
           <Image
             src="/logo.png"
-            alt="@SimplySpookyStephanie"
+            alt="Simply Spooky Stephanie"
             width={44}
             height={44}
             priority
             className="h-10 w-10 rounded-full object-cover shadow-[0_0_16px_color-mix(in_srgb,#7D1111_30%,transparent)] transition-transform duration-300 group-hover:scale-105 md:h-11 md:w-11"
           />
-          <span className="hidden font-display text-lg font-semibold tracking-wide text-bone sm:inline md:text-xl">
-            Stephanie Martinez
+          <span className="hidden font-display text-base font-semibold tracking-wide text-bone sm:inline md:text-lg">
+            Simply Spooky Stephanie
           </span>
         </a>
 

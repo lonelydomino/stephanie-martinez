@@ -28,17 +28,19 @@ export default function Hero() {
             <Logo size="hero" priority />
           </motion.div>
 
-          <h1 className="sr-only">
-            Stephanie Martinez — Spooky Creator, Halloween All Year Long
-          </h1>
-
           <p className="mb-4 font-sans text-xs font-medium uppercase tracking-[0.35em] text-accent-orange/90 md:text-sm">
             Spooky Creator • Halloween All Year Long
           </p>
 
-          <p className="font-display text-2xl font-semibold tracking-wide text-bone sm:text-3xl md:text-4xl">
-            @SimplySpookyStephanie
-          </p>
+          <h1 className="font-display text-4xl font-semibold leading-tight tracking-wide text-bone sm:text-5xl md:text-6xl lg:text-7xl">
+            <span className="bg-gradient-to-b from-gold via-bone to-bone/70 bg-clip-text text-transparent">
+              Simply Spooky
+            </span>
+            <br />
+            <span className="bg-gradient-to-b from-bone via-bone to-muted bg-clip-text text-transparent">
+              Stephanie
+            </span>
+          </h1>
 
           <motion.p
             className="mx-auto mt-6 max-w-xl text-base leading-relaxed text-muted md:mt-8 md:text-lg"

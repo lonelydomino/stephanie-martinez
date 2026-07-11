@@ -31,7 +31,7 @@ export default function Logo({
   return (
     <Image
       src="/logo.png"
-      alt="@SimplySpookyStephanie logo"
+      alt="Simply Spooky Stephanie logo"
       width={config.width}
       height={config.height}
       priority={priority}
