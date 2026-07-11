@@ -12,6 +12,13 @@ export type YouTubeMetadata = {
 
 const OEMBED_URL = "https://www.youtube.com/oembed";
 const WATCH_URL = "https://www.youtube.com/watch";
+const THUMBNAIL_BASE = "https://i.ytimg.com/vi";
+
+const THUMBNAIL_CANDIDATES = [
+  "maxresdefault.jpg",
+  "sddefault.jpg",
+  "hqdefault.jpg",
+] as const;
 
 async function fetchOEmbed(videoId: string) {
   const watchUrl = `${WATCH_URL}?v=${videoId}`;
@@ -30,7 +37,10 @@ async function fetchOEmbed(videoId: string) {
   }>;
 }
 
-async function fetchUploadDate(videoId: string): Promise<string | null> {
+async function fetchWatchPageData(videoId: string): Promise<{
+  uploadDate: string | null;
+  thumbnailUrl: string | null;
+}> {
   const response = await fetch(`${WATCH_URL}?v=${videoId}`, {
     headers: {
       "User-Agent":
@@ -40,12 +50,37 @@ async function fetchUploadDate(videoId: string): Promise<string | null> {
   });
 
   if (!response.ok) {
-    return null;
+    return { uploadDate: null, thumbnailUrl: null };
   }
 
   const html = await response.text();
-  const match = html.match(/"uploadDate":"([^"]+)"/);
-  return match?.[1] ?? null;
+  const uploadDate = html.match(/"uploadDate":"([^"]+)"/)?.[1] ?? null;
+  const ogImage = html.match(/property="og:image" content="([^"]+)"/)?.[1];
+
+  const thumbnailUrl =
+    ogImage?.includes(`/vi/${videoId}/`) ? ogImage : null;
+
+  return { uploadDate, thumbnailUrl };
+}
+
+async function resolveThumbnailUrl(videoId: string): Promise<string> {
+  for (const file of THUMBNAIL_CANDIDATES) {
+    const url = `${THUMBNAIL_BASE}/${videoId}/${file}`;
+    const response = await fetch(url, {
+      method: "HEAD",
+      next: { revalidate: 3600 },
+    });
+
+    if (!response.ok) continue;
+
+    const bytes = Number(response.headers.get("content-length") ?? 0);
+    // maxresdefault returns a tiny placeholder for some videos despite 200 OK.
+    if (file === "maxresdefault.jpg" && bytes < 5000) continue;
+
+    return url;
+  }
+
+  return `${THUMBNAIL_BASE}/${videoId}/hqdefault.jpg`;
 }
 
 export async function fetchYouTubeMetadata(
@@ -54,20 +89,21 @@ export async function fetchYouTubeMetadata(
   const videoId = getYouTubeVideoId(url);
   if (!videoId) return null;
 
-  const [oembed, uploadDate] = await Promise.all([
+  const [oembed, watchPage, thumbnailUrl] = await Promise.all([
     fetchOEmbed(videoId),
-    fetchUploadDate(videoId),
+    fetchWatchPageData(videoId),
+    resolveThumbnailUrl(videoId),
   ]);
 
-  if (!uploadDate) {
+  if (!watchPage.uploadDate) {
     throw new Error(`Could not read upload date for YouTube video ${videoId}`);
   }
 
   return {
     videoId,
     title: oembed.title,
-    thumbnailUrl: oembed.thumbnail_url,
-    uploadDate,
+    thumbnailUrl: watchPage.thumbnailUrl ?? thumbnailUrl,
+    uploadDate: watchPage.uploadDate,
   };
 }
 
