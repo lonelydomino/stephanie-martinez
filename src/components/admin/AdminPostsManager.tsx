@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import Logo from "@/components/Logo";
 import CoverFramingEditor from "@/components/admin/CoverFramingEditor";
+import AdminHelpGuide from "@/components/admin/AdminHelpGuide";
 import { FieldHelp, FieldLabel } from "@/components/admin/FieldHelp";
 import { normalizeCoverZoom } from "@/lib/coverFraming";
 import {
@@ -616,6 +617,7 @@ export default function AdminPostsManager({
         </div>
 
         <div className="flex flex-wrap gap-2">
+          <AdminHelpGuide />
           <Link
             href="/"
             target="_blank"
