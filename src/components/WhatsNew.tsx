@@ -17,6 +17,7 @@ type BlogPost = {
   status: PostStatus;
   image: string;
   imageAlt: string;
+  href?: string;
 };
 
 const statusLabels: Record<PostStatus, string> = {
@@ -46,6 +47,7 @@ const posts: BlogPost[] = [
     status: "current",
     image: "/blog/paranormal-series.jpg",
     imageAlt: "Dimly lit hallway in an abandoned building during a paranormal investigation",
+    href: "https://youtu.be/3UlpjWwiyJM",
   },
   {
     slug: "midsummer-scream-2026",
@@ -185,10 +187,13 @@ function BlogCard({ post, index, reduce, featured = false }: CardProps) {
         <div className="mt-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <PostMeta when={post.when} location={post.location} />
           <a
-            href="#social"
+            href={post.href ?? "#social"}
+            {...(post.href
+              ? { target: "_blank", rel: "noopener noreferrer" }
+              : {})}
             className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-gold transition-colors hover:text-accent-orange"
           >
-            View recap
+            {post.href?.includes("youtu") ? "Watch on YouTube" : "View recap"}
             <ArrowUpRight className="h-3.5 w-3.5" />
           </a>
         </div>
