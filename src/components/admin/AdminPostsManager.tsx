@@ -9,11 +9,17 @@ import {
   ArrowUp,
   ExternalLink,
   LogOut,
+  Loader2,
   Plus,
   Save,
   Trash2,
 } from "lucide-react";
 import Logo from "@/components/Logo";
+import {
+  clearPendingDeploy,
+  loadPendingDeploy,
+  savePendingDeploy,
+} from "@/lib/adminPendingDeploy";
 import {
   POST_CATEGORIES,
   POST_SIZE_OPTIONS,
@@ -125,13 +131,57 @@ type PendingNavigation = {
   slug: string | null;
 };
 
+function getDeployingSlugs(
+  pending: WhatsNewPostSource[],
+  server: WhatsNewPostSource[],
+): Set<string> {
+  const serverSlugs = new Set(server.map((post) => post.slug));
+  return new Set(
+    pending.filter((post) => post.slug && !serverSlugs.has(post.slug)).map(
+      (post) => post.slug!,
+    ),
+  );
+}
+
+function hydrateAdminState(serverPosts: WhatsNewPostSource[]) {
+  const pending = loadPendingDeploy();
+  if (!pending) {
+    return {
+      posts: serverPosts,
+      savedPosts: serverPosts,
+      deployingSlugs: new Set<string>(),
+    };
+  }
+
+  if (postsSnapshot(pending.posts) === postsSnapshot(serverPosts)) {
+    clearPendingDeploy();
+    return {
+      posts: serverPosts,
+      savedPosts: serverPosts,
+      deployingSlugs: new Set<string>(),
+    };
+  }
+
+  return {
+    posts: pending.posts,
+    savedPosts: pending.posts,
+    deployingSlugs: getDeployingSlugs(pending.posts, serverPosts),
+  };
+}
+
 export default function AdminPostsManager({
   initialPosts,
   resolvedPreviews,
 }: Props) {
   const router = useRouter();
-  const [posts, setPosts] = useState<WhatsNewPostSource[]>(initialPosts);
-  const [savedPosts, setSavedPosts] = useState<WhatsNewPostSource[]>(initialPosts);
+  const hydrated = useMemo(() => hydrateAdminState(initialPosts), []);
+  const [posts, setPosts] = useState<WhatsNewPostSource[]>(hydrated.posts);
+  const [savedPosts, setSavedPosts] = useState<WhatsNewPostSource[]>(
+    hydrated.savedPosts,
+  );
+  const [deployingSlugs, setDeployingSlugs] = useState<Set<string>>(
+    hydrated.deployingSlugs,
+  );
   const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -190,6 +240,38 @@ export default function AdminPostsManager({
     window.addEventListener("beforeunload", handleBeforeUnload);
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [hasUnsavedChanges]);
+
+  useEffect(() => {
+    const pending = loadPendingDeploy();
+    if (!pending) return;
+
+    if (postsSnapshot(pending.posts) === postsSnapshot(initialPosts)) {
+      clearPendingDeploy();
+      setDeployingSlugs(new Set());
+      if (!hasUnsavedChanges) {
+        setPosts(initialPosts);
+        setSavedPosts(initialPosts);
+      }
+      return;
+    }
+
+    setDeployingSlugs(getDeployingSlugs(pending.posts, initialPosts));
+
+    if (!hasUnsavedChanges) {
+      setPosts(pending.posts);
+      setSavedPosts(pending.posts);
+    }
+  }, [initialPosts, hasUnsavedChanges]);
+
+  useEffect(() => {
+    if (deployingSlugs.size === 0) return;
+
+    const interval = window.setInterval(() => {
+      router.refresh();
+    }, 15000);
+
+    return () => window.clearInterval(interval);
+  }, [deployingSlugs, router]);
 
   function updateSelected(patch: Partial<WhatsNewPostSource>) {
     if (selectedIndex < 0) return;
@@ -295,10 +377,22 @@ export default function AdminPostsManager({
       return false;
     }
 
-    const data = (await response.json()) as { message?: string };
+    const data = (await response.json()) as {
+      message?: string;
+      mode?: "local" | "github";
+    };
     setSavedPosts(normalized);
     setPosts(normalized);
     setMessage(data.message ?? "Saved!");
+
+    if (data.mode === "github") {
+      savePendingDeploy(normalized);
+      setDeployingSlugs(getDeployingSlugs(normalized, initialPosts));
+    } else {
+      clearPendingDeploy();
+      setDeployingSlugs(new Set());
+    }
+
     router.refresh();
     return true;
   }
@@ -516,6 +610,13 @@ export default function AdminPostsManager({
         )}
       </div>
 
+      {deployingSlugs.size > 0 && (
+        <p className="mb-4 rounded-xl border border-sky-500/30 bg-sky-500/10 px-4 py-3 text-sm text-sky-200">
+          Waiting for Vercel to redeploy — new or updated posts show a blue
+          &ldquo;Deploying…&rdquo; badge until the live admin list catches up.
+        </p>
+      )}
+
       {message && (
         <p className="mb-4 rounded-xl border border-accent-orange/30 bg-accent-orange/10 px-4 py-3 text-sm text-accent-orange">
           {message}
@@ -535,17 +636,26 @@ export default function AdminPostsManager({
               selectedSlug === post.slug ||
               (selectedSlug === "__new__" && !post.slug && index === selectedIndex);
             const postDirty = isPostDirty(post, savedPosts);
+            const isDeploying = Boolean(post.slug && deployingSlugs.has(post.slug));
 
             return (
               <div
                 key={key}
                 className={`relative overflow-hidden rounded-2xl border p-4 transition-all duration-200 ${
-                  active
-                    ? "border-accent-orange/80 bg-accent-purple/25 shadow-[0_0_0_1px_color-mix(in_srgb,var(--accent-orange)_35%,transparent),0_0_24px_color-mix(in_srgb,var(--accent-orange)_18%,transparent)]"
-                    : "border-white/8 bg-bg-secondary/40 hover:border-white/20 hover:bg-bg-secondary/55"
+                  isDeploying
+                    ? "border-sky-500/60 bg-sky-950/35 shadow-[0_0_0_1px_color-mix(in_srgb,#3b82f6_30%,transparent),0_0_20px_color-mix(in_srgb,#3b82f6_12%,transparent)]"
+                    : active
+                      ? "border-accent-orange/80 bg-accent-purple/25 shadow-[0_0_0_1px_color-mix(in_srgb,var(--accent-orange)_35%,transparent),0_0_24px_color-mix(in_srgb,var(--accent-orange)_18%,transparent)]"
+                      : "border-white/8 bg-bg-secondary/40 hover:border-white/20 hover:bg-bg-secondary/55"
                 }`}
               >
-                {active && (
+                {isDeploying && (
+                  <span
+                    aria-hidden
+                    className="absolute inset-y-3 left-0 w-1 rounded-r-full bg-sky-400 shadow-[0_0_12px_color-mix(in_srgb,#38bdf8_70%,transparent)]"
+                  />
+                )}
+                {active && !isDeploying && (
                   <span
                     aria-hidden
                     className="absolute inset-y-3 left-0 w-1 rounded-r-full bg-accent-orange shadow-[0_0_12px_color-mix(in_srgb,var(--accent-orange)_70%,transparent)]"
@@ -554,24 +664,30 @@ export default function AdminPostsManager({
                 <button
                   type="button"
                   onClick={() => requestSelectPost(post.slug || "__new__")}
-                  className={`w-full text-left ${active ? "pl-3" : ""}`}
+                  className={`w-full text-left ${active || isDeploying ? "pl-3" : ""}`}
                 >
                   <div className="flex items-start justify-between gap-2">
                     <p
                       className={`font-medium ${
-                        active ? "text-bone" : "text-bone/90"
+                        active || isDeploying ? "text-bone" : "text-bone/90"
                       }`}
                     >
                       {post.title || post.excerpt || "New post"}
                     </p>
                     <div className="flex shrink-0 items-center gap-1.5">
-                      {postDirty && !active && (
+                      {isDeploying && (
+                        <span className="inline-flex items-center gap-1 rounded-full border border-sky-400/50 bg-sky-500/15 px-2 py-0.5 text-[0.6rem] font-bold uppercase tracking-wider text-sky-200">
+                          <Loader2 className="h-3 w-3 animate-spin" />
+                          Deploying…
+                        </span>
+                      )}
+                      {postDirty && !active && !isDeploying && (
                         <span
                           className="h-2 w-2 rounded-full bg-accent-orange shadow-[0_0_8px_color-mix(in_srgb,var(--accent-orange)_60%,transparent)]"
                           title="Unsaved edits on this post"
                         />
                       )}
-                      {active && (
+                      {active && !isDeploying && (
                         <span className="rounded-full border border-accent-orange/50 bg-accent-orange/15 px-2 py-0.5 text-[0.6rem] font-bold uppercase tracking-wider text-accent-orange">
                           Editing
                         </span>
