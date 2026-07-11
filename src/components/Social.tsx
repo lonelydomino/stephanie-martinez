@@ -38,7 +38,7 @@ const platforms = [
   {
     name: "Facebook",
     description: "Community, announcements, events",
-    href: "https://facebook.com",
+    href: "https://www.facebook.com/stephanie.martinez.37266",
     Icon: FacebookIcon,
     variant: "purple" as const,
     glow: "#4A245A",
