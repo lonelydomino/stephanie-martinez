@@ -2,6 +2,7 @@ import Atmosphere from "@/components/Atmosphere";
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import About from "@/components/About";
+import WhatsNew from "@/components/WhatsNew";
 import Social from "@/components/Social";
 import Shop from "@/components/Shop";
 import Adventures from "@/components/Adventures";
@@ -17,6 +18,7 @@ export default function Home() {
       <main className="relative flex flex-1 flex-col">
         <Hero />
         <About />
+        <WhatsNew />
         <Social />
         <Shop />
         <Adventures />
