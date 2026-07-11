@@ -10,6 +10,7 @@ import {
   MIN_COVER_ZOOM,
   coverImageStyle,
   formatCoverPosition,
+  panCoverFocus,
   parseCoverPosition,
 } from "@/lib/coverFraming";
 
@@ -23,17 +24,11 @@ type Props = {
   onChange: (update: { coverPosition?: string; coverZoom?: number }) => void;
 };
 
-function focusFromPointer(
-  event: React.PointerEvent<HTMLDivElement>,
-  bounds: DOMRect,
-): { x: number; y: number } {
-  const x = ((event.clientX - bounds.left) / bounds.width) * 100;
-  const y = ((event.clientY - bounds.top) / bounds.height) * 100;
-  return {
-    x: Math.min(100, Math.max(0, x)),
-    y: Math.min(100, Math.max(0, y)),
-  };
-}
+type DragStart = {
+  clientX: number;
+  clientY: number;
+  focus: { x: number; y: number };
+};
 
 export default function CoverFramingEditor({
   imageSrc,
@@ -45,6 +40,7 @@ export default function CoverFramingEditor({
   onChange,
 }: Props) {
   const frameRef = useRef<HTMLDivElement>(null);
+  const dragStartRef = useRef<DragStart | null>(null);
   const [dragging, setDragging] = useState(false);
   const focus = parseCoverPosition(position);
   const activeZoom = zoom ?? DEFAULT_COVER_ZOOM;
@@ -52,32 +48,49 @@ export default function CoverFramingEditor({
     position !== undefined ||
     (zoom != null && zoom > DEFAULT_COVER_ZOOM);
 
-  const updateFocus = useCallback(
+  const updateFocusFromDrag = useCallback(
     (event: React.PointerEvent<HTMLDivElement>) => {
+      const dragStart = dragStartRef.current;
       const bounds = frameRef.current?.getBoundingClientRect();
-      if (!bounds) return;
+      if (!dragStart || !bounds) return;
 
-      const nextFocus = focusFromPointer(event, bounds);
+      const nextFocus = panCoverFocus(
+        dragStart.focus,
+        event.clientX - dragStart.clientX,
+        event.clientY - dragStart.clientY,
+        bounds,
+        activeZoom,
+      );
+
       onChange({ coverPosition: formatCoverPosition(nextFocus) });
     },
-    [onChange],
+    [activeZoom, onChange],
   );
 
   function handlePointerDown(event: React.PointerEvent<HTMLDivElement>) {
+    if (loading) return;
+
     event.preventDefault();
+    dragStartRef.current = {
+      clientX: event.clientX,
+      clientY: event.clientY,
+      focus: parseCoverPosition(position),
+    };
     setDragging(true);
     frameRef.current?.setPointerCapture(event.pointerId);
-    updateFocus(event);
   }
 
   function handlePointerMove(event: React.PointerEvent<HTMLDivElement>) {
-    if (!dragging) return;
-    updateFocus(event);
+    if (!dragStartRef.current) return;
+    updateFocusFromDrag(event);
   }
 
-  function handlePointerUp(event: React.PointerEvent<HTMLDivElement>) {
-    if (!dragging) return;
+  function endDrag(event: React.PointerEvent<HTMLDivElement>) {
+    if (!dragStartRef.current) return;
+
+    dragStartRef.current = null;
     setDragging(false);
+
     if (frameRef.current?.hasPointerCapture(event.pointerId)) {
       frameRef.current.releasePointerCapture(event.pointerId);
     }
@@ -98,17 +111,17 @@ export default function CoverFramingEditor({
         } touch-none`}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerUp}
-        onPointerCancel={handlePointerUp}
+        onPointerUp={endDrag}
+        onPointerCancel={endDrag}
         role="img"
-        aria-label={`Cover preview for ${imageAlt}. Drag to reposition.`}
+        aria-label={`Cover preview for ${imageAlt}. Click and drag to reposition.`}
       >
         <Image
           key={imageSrc}
           src={imageSrc}
           alt={imageAlt}
           fill
-          className="object-cover select-none"
+          className="pointer-events-none object-cover select-none"
           style={imageStyle}
           sizes="(max-width: 768px) 100vw, 600px"
           draggable={false}
@@ -163,7 +176,7 @@ export default function CoverFramingEditor({
       </div>
 
       <p className="text-xs text-muted">
-        Drag the image to choose what stays in frame. Zoom in if the thumbnail
+        Click and drag the image to slide it into place. Zoom in if the thumbnail
         needs a tighter crop. Framing is saved with the post (
         {position ?? DEFAULT_COVER_POSITION}
         {activeZoom > DEFAULT_COVER_ZOOM
