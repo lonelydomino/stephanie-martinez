@@ -32,3 +32,8 @@ export function formatYouTubeUploadDate(isoDate: string): string {
     year: "numeric",
   });
 }
+
+/** ISO timestamps and YouTube `publishDate.simpleText` values. */
+export function formatYouTubeDate(value: string): string {
+  return value.includes("T") ? formatYouTubeUploadDate(value) : value;
+}
