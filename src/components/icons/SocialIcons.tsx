@@ -77,3 +77,17 @@ export function SnapchatIcon({ className, ...props }: IconProps) {
     </svg>
   );
 }
+
+export function TumblrIcon({ className, ...props }: IconProps) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden
+      {...props}
+    >
+      <path d="M16.749 3.902v4.119h3.726l-.351 4.014H16.75v9.734c0 1.814.559 2.207 2.081 2.207.413 0 1.158-.039 1.926-.186v4.119c-.927.392-2.021.588-3.138.588-4.149 0-5.894-1.946-5.894-5.894V12.035H7.615V8.021h3.202V4.484c1.459-.698 3.008-1.207 4.932-1.582z" />
+    </svg>
+  );
+}

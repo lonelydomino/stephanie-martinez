@@ -9,6 +9,7 @@ import {
   InstagramIcon,
   SnapchatIcon,
   TikTokIcon,
+  TumblrIcon,
   YoutubeIcon,
 } from "./icons/SocialIcons";
 
@@ -29,6 +30,7 @@ const socials = [
   { href: "https://www.youtube.com/@simplyspookystephanie", label: "YouTube", Icon: YoutubeIcon },
   { href: "https://www.facebook.com/stephanie.martinez.37266", label: "Facebook", Icon: FacebookIcon },
   { href: "https://www.snapchat.com/t/cLyAhQuI", label: "Snapchat", Icon: SnapchatIcon },
+  { href: "https://www.tumblr.com/simply-stephanie93", label: "Tumblr", Icon: TumblrIcon },
 ];
 
 export default function Navbar() {
