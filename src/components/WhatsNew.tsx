@@ -4,6 +4,7 @@ import { Fragment, type ReactNode } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { ArrowUpRight, Calendar } from "lucide-react";
 import Image from "next/image";
+import { coverImageStyle } from "@/lib/coverFraming";
 import type { BlogPost, PostStatus } from "@/lib/whatsNewPosts";
 import { getLinkPlatformLabel } from "@/lib/linkPlatforms";
 import Section from "./ui/Section";
@@ -66,17 +67,20 @@ function BlogCard({ post, index, reduce, large = false, wide = false }: CardProp
           isHero ? "aspect-[16/9] md:aspect-[21/9]" : "aspect-[16/9]"
         }`}
       >
-        <Image
-          src={post.image}
-          alt={post.imageAlt}
-          fill
-          sizes={
-            isHero
-              ? "(max-width: 1024px) 100vw, 66vw"
-              : "(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-          }
-          className="object-cover transition-transform duration-700 group-hover:scale-105"
-        />
+        <div className="absolute inset-0 transition-transform duration-700 group-hover:scale-105">
+          <Image
+            src={post.image}
+            alt={post.imageAlt}
+            fill
+            sizes={
+              isHero
+                ? "(max-width: 1024px) 100vw, 66vw"
+                : "(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            }
+            className="object-cover"
+            style={coverImageStyle(post.coverPosition, post.coverZoom)}
+          />
+        </div>
         <div className="absolute inset-0 bg-gradient-to-t from-bg-primary via-bg-primary/20 to-transparent" />
         <div className="absolute left-4 top-4 flex flex-wrap gap-2">
           <StatusBadge status={post.status} />
