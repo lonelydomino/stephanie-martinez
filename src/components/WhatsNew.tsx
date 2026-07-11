@@ -111,7 +111,9 @@ function BlogCard({ post, index, reduce, featured = false }: CardProps) {
           >
             {post.href && isYouTubeUrl(post.href)
               ? "Watch on YouTube"
-              : "View recap"}
+              : post.href?.includes("instagram.com")
+                ? "View on Instagram"
+                : "View recap"}
             <ArrowUpRight className="h-3.5 w-3.5" />
           </a>
         </div>
