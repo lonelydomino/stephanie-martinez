@@ -9,8 +9,13 @@ import Adventures from "@/components/Adventures";
 import Collaborate from "@/components/Collaborate";
 import Newsletter from "@/components/Newsletter";
 import Footer from "@/components/Footer";
+import { getWhatsNewPosts } from "@/lib/getWhatsNewPosts";
 
-export default function Home() {
+export const revalidate = 3600;
+
+export default async function Home() {
+  const posts = await getWhatsNewPosts();
+
   return (
     <>
       <Atmosphere />
@@ -18,7 +23,7 @@ export default function Home() {
       <main className="relative z-10 flex flex-1 flex-col">
         <Hero />
         <About />
-        <WhatsNew />
+        <WhatsNew posts={posts} />
         <Social />
         <Shop />
         <Adventures />

@@ -3,21 +3,9 @@
 import { motion, useReducedMotion } from "framer-motion";
 import { ArrowUpRight, Calendar } from "lucide-react";
 import Image from "next/image";
+import type { BlogPost, PostStatus } from "@/lib/whatsNewPosts";
+import { isYouTubeUrl } from "@/lib/youtubeUtils";
 import Section from "./ui/Section";
-
-type PostStatus = "current" | "upcoming" | "recent";
-
-type BlogPost = {
-  slug: string;
-  title: string;
-  excerpt: string;
-  when: string;
-  category: string;
-  status: PostStatus;
-  image: string;
-  imageAlt: string;
-  href?: string;
-};
 
 const statusLabels: Record<PostStatus, string> = {
   current: "Right Now",
@@ -32,66 +20,6 @@ const statusStyles: Record<PostStatus, string> = {
     "border-accent-purple/40 bg-accent-purple/10 text-gold",
   recent: "border-white/10 bg-bg-primary/60 text-muted",
 };
-
-// Swap images in public/blog/ with real event photos — keep filenames or update paths here.
-const posts: BlogPost[] = [
-  {
-    slug: "paranormal-investigation-series",
-    title: "Filming a Paranormal Investigation Series",
-    excerpt:
-      "Overnight sessions, EVPs, and behind-the-scenes footage from a legendary haunted location—edited into a multi-part series dropping this fall. Follow along for equipment setups, team reactions, and the moments that still give us chills.",
-    when: "Summer 2026",
-    category: "Investigation",
-    status: "current",
-    image: "/blog/paranormal-series.jpg",
-    imageAlt: "Dimly lit hallway in an abandoned building during a paranormal investigation",
-    href: "https://youtu.be/3UlpjWwiyJM",
-  },
-  {
-    slug: "midsummer-scream-2026",
-    title: "Midsummer Scream Horror Convention",
-    excerpt:
-      "Panels, cosplay, vendor hall treasures, and meetups with the spooky community. A full weekend of horror energy—recap posts and haul videos are live on socials.",
-    when: "July 2026",
-    category: "Convention",
-    status: "recent",
-    image: "/blog/midsummer-scream.jpg",
-    imageAlt: "Crowd and booths at a horror convention",
-  },
-  {
-    slug: "horror-film-premiere",
-    title: "Horror Film Premiere Night",
-    excerpt:
-      "Red carpet looks, an early screening, and first reactions from one of the summer's most anticipated slashers. Watch the premiere vlog for the full night out.",
-    when: "June 2026",
-    category: "Premiere",
-    status: "recent",
-    image: "/blog/horror-premiere.jpg",
-    imageAlt: "Movie theater seats before a horror film screening",
-  },
-  {
-    slug: "anime-expo-2026",
-    title: "Anime Expo — Spooky Cosplay & Panels",
-    excerpt:
-      "Horror-anime panels, convention floor content, and spooky cosplay all weekend. Daily vlogs and outfit breakdowns are coming to TikTok.",
-    when: "July 2026",
-    category: "Convention",
-    status: "upcoming",
-    image: "/blog/anime-expo.jpg",
-    imageAlt: "Convention attendees in cosplay",
-  },
-  {
-    slug: "halloween-in-july-haul",
-    title: "Halloween in July Pop-Up Haul",
-    excerpt:
-      "Year-round décor finds, limited-run merch, and a full review of the best spooky staples from the pop-up. Every piece styled and ranked for the haunt-at-home crowd.",
-    when: "June 2026",
-    category: "Shopping",
-    status: "recent",
-    image: "/blog/halloween-haul.jpg",
-    imageAlt: "Halloween decorations and seasonal merchandise on display",
-  },
-];
 
 function PostMeta({ when }: { when: string }) {
   return (
@@ -120,6 +48,8 @@ type CardProps = {
 };
 
 function BlogCard({ post, index, reduce, featured = false }: CardProps) {
+  const externalLink = post.href && post.href !== "#social";
+
   return (
     <motion.article
       initial={reduce === false ? { y: featured ? 24 : 20 } : false}
@@ -174,12 +104,14 @@ function BlogCard({ post, index, reduce, featured = false }: CardProps) {
           <PostMeta when={post.when} />
           <a
             href={post.href ?? "#social"}
-            {...(post.href
+            {...(externalLink
               ? { target: "_blank", rel: "noopener noreferrer" }
               : {})}
             className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-gold transition-colors hover:text-accent-orange"
           >
-            {post.href?.includes("youtu") ? "Watch on YouTube" : "View recap"}
+            {post.href && isYouTubeUrl(post.href)
+              ? "Watch on YouTube"
+              : "View recap"}
             <ArrowUpRight className="h-3.5 w-3.5" />
           </a>
         </div>
@@ -188,7 +120,11 @@ function BlogCard({ post, index, reduce, featured = false }: CardProps) {
   );
 }
 
-export default function WhatsNew() {
+type WhatsNewProps = {
+  posts: BlogPost[];
+};
+
+export default function WhatsNew({ posts }: WhatsNewProps) {
   const reduce = useReducedMotion();
   const featured = posts.find((post) => post.status === "current");
   const rest = posts.filter((post) => post.status !== "current");
