@@ -135,9 +135,7 @@ export default function AdminPostsManager({
   const router = useRouter();
   const [posts, setPosts] = useState<WhatsNewPostSource[]>(initialPosts);
   const [savedPosts, setSavedPosts] = useState<WhatsNewPostSource[]>(initialPosts);
-  const [selectedSlug, setSelectedSlug] = useState<string | null>(
-    initialPosts[0]?.slug ?? null,
-  );
+  const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
@@ -816,7 +814,7 @@ export default function AdminPostsManager({
           </section>
         ) : (
           <section className="rounded-2xl border border-dashed border-white/10 p-10 text-center text-muted">
-            Select a post or add a new one.
+            Select a post to edit it here.
           </section>
         )}
       </div>
