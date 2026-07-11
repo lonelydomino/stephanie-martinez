@@ -17,6 +17,7 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://stephanie-martinez.vercel.app"),
   title: {
     default: "Stephanie Martinez | Spooky Creator — Halloween All Year",
     template: "%s | Stephanie Martinez",
@@ -37,6 +38,10 @@ export const metadata: Metadata = {
     "Stephanie Martinez",
   ],
   authors: [{ name: "Stephanie Martinez" }],
+  icons: {
+    icon: "/logo.png",
+    apple: "/logo.png",
+  },
   openGraph: {
     title: "Stephanie Martinez | Spooky Creator",
     description:
@@ -44,12 +49,21 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     siteName: "Stephanie Martinez",
+    images: [
+      {
+        url: "/logo.png",
+        width: 1024,
+        height: 1024,
+        alt: "@SimplySpookyStephanie",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Stephanie Martinez | Spooky Creator",
     description:
       "Halloween all year long — haunted locations, fashion, conventions & paranormal adventures.",
+    images: ["/logo.png"],
   },
   robots: {
     index: true,

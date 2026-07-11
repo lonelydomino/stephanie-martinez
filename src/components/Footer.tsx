@@ -5,6 +5,8 @@ import {
   YoutubeIcon,
 } from "./icons/SocialIcons";
 
+import Logo from "./Logo";
+
 const socials = [
   { href: "https://instagram.com", label: "Instagram", Icon: InstagramIcon },
   { href: "https://tiktok.com", label: "TikTok", Icon: TikTokIcon },
@@ -16,6 +18,9 @@ export default function Footer() {
   return (
     <footer className="relative z-10 border-t border-white/5 bg-bg-primary/90 px-5 py-14 text-center md:px-8">
       <div className="mx-auto max-w-3xl">
+        <div className="mb-5 flex justify-center">
+          <Logo size="footer" />
+        </div>
         <p className="font-display text-lg font-semibold tracking-wide text-bone">
           © 2026 Stephanie Martinez
         </p>

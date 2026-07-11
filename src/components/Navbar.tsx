@@ -2,6 +2,7 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { Menu, X } from "lucide-react";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import {
   FacebookIcon,
@@ -57,9 +58,19 @@ export default function Navbar() {
       <nav className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-4 md:px-8">
         <a
           href="#home"
-          className="font-display text-lg font-semibold tracking-wide text-bone transition-colors hover:text-gold md:text-xl"
+          className="group flex items-center gap-3 transition-opacity hover:opacity-90"
         >
-          Stephanie Martinez
+          <Image
+            src="/logo.png"
+            alt="@SimplySpookyStephanie"
+            width={44}
+            height={44}
+            priority
+            className="h-10 w-10 rounded-full object-cover shadow-[0_0_16px_color-mix(in_srgb,#7D1111_30%,transparent)] transition-transform duration-300 group-hover:scale-105 md:h-11 md:w-11"
+          />
+          <span className="hidden font-display text-lg font-semibold tracking-wide text-bone sm:inline md:text-xl">
+            Stephanie Martinez
+          </span>
         </a>
 
         <ul className="hidden items-center gap-1 lg:flex">
