@@ -977,7 +977,7 @@ export default function AdminPostsManager({
               <details className="rounded-xl border border-white/8 bg-bg-primary/40 p-4">
                 <summary className="flex cursor-pointer list-none items-center gap-2 text-sm font-medium text-gold [&::-webkit-details-marker]:hidden">
                   <span>Optional overrides</span>
-                  <FieldHelp text="Only use these if you want to change the title or date text from what was pulled in automatically. Most people can leave these alone." />
+                  <FieldHelp text="Only use these if you want to change the title or date text from what was pulled in automatically. You can leave these alone." />
                 </summary>
                 <div className="mt-4 space-y-4">
                   <div>
