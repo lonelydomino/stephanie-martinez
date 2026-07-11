@@ -867,11 +867,11 @@ export default function AdminPostsManager({
               </div>
 
               <div>
-                <FieldLabel
-                  label="Cover image (optional)"
-                  help="Upload your own picture if you do not want the automatic thumbnail from the link. This is optional — you can leave it blank."
-                />
-                <div className="mt-3 flex flex-wrap items-center gap-3">
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-3">
+                  <span className="text-sm font-medium text-bone">
+                    Cover image (optional)
+                  </span>
+                  <FieldHelp text="Upload your own picture if you do not want the automatic thumbnail from the link. This is optional — you can leave it as is." />
                   <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-white/10 px-4 py-2.5 text-sm text-bone hover:border-accent-purple/40">
                     <input
                       type="file"
