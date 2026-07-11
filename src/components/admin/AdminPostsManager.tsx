@@ -16,8 +16,9 @@ import {
 import Logo from "@/components/Logo";
 import CoverFramingEditor from "@/components/admin/CoverFramingEditor";
 import AdminHelpGuide from "@/components/admin/AdminHelpGuide";
+import AdminSiteStatus, { type SiteStatus } from "@/components/admin/AdminSiteStatus";
 import { FieldHelp, FieldLabel } from "@/components/admin/FieldHelp";
-import { normalizeCoverZoom } from "@/lib/coverFraming";
+import { normalizePost, postsSnapshot } from "@/lib/adminPostSnapshot";
 import {
   COVER_PLACEHOLDER_ALT,
   isCoverPlaceholder,
@@ -83,28 +84,6 @@ function emptyPost(): WhatsNewPostSource {
 
 function statusLabel(status: PostStatus): string {
   return POST_STATUS_OPTIONS.find((option) => option.value === status)?.label ?? status;
-}
-
-function normalizePost(post: WhatsNewPostSource): WhatsNewPostSource {
-  return {
-    ...post,
-    slug: post.slug.trim() || slugify(post.title ?? post.excerpt),
-    excerpt: post.excerpt.trim(),
-    href: post.href?.trim() || undefined,
-    title: post.title?.trim() || undefined,
-    when: post.when?.trim() || undefined,
-    coverImage: post.coverImage?.trim() || undefined,
-    coverPosition: post.coverPosition?.trim() || undefined,
-    coverZoom: normalizeCoverZoom(post.coverZoom),
-    image: post.image?.trim() || undefined,
-    imageAlt: post.imageAlt?.trim() || undefined,
-    size: post.size ?? "small",
-    category: post.category?.trim() || "Investigation",
-  };
-}
-
-function postsSnapshot(posts: WhatsNewPostSource[]): string {
-  return JSON.stringify(posts.map(normalizePost));
 }
 
 function findSavedIndex(
@@ -269,6 +248,17 @@ export default function AdminPostsManager({
     [posts, savedPosts],
   );
 
+  const siteStatus = useMemo((): SiteStatus => {
+    if (deployingSlugs.size > 0) return "deploying";
+
+    const pending = loadPendingDeploy();
+    if (!pending) return "live";
+
+    return postsSnapshot(pending.posts) === postsSnapshot(initialPosts)
+      ? "live"
+      : "deploying";
+  }, [deployingSlugs, initialPosts]);
+
   useEffect(() => {
     if (!hasUnsavedChanges) return;
 
@@ -304,14 +294,42 @@ export default function AdminPostsManager({
   }, [initialPosts, hasUnsavedChanges]);
 
   useEffect(() => {
-    if (deployingSlugs.size === 0) return;
+    if (siteStatus !== "deploying") return;
 
-    const interval = window.setInterval(() => {
-      router.refresh();
-    }, 15000);
+    let cancelled = false;
 
-    return () => window.clearInterval(interval);
-  }, [deployingSlugs, router]);
+    const pollServerPosts = async () => {
+      try {
+        const response = await fetch("/api/admin/posts", { cache: "no-store" });
+        if (!response.ok || cancelled) return;
+
+        const data = (await response.json()) as { posts?: WhatsNewPostSource[] };
+        if (!Array.isArray(data.posts) || cancelled) return;
+
+        const pending = loadPendingDeploy();
+        const targetPosts = pending?.posts ?? savedPosts;
+
+        if (postsSnapshot(data.posts) === postsSnapshot(targetPosts)) {
+          clearPendingDeploy();
+          setDeployingSlugs(new Set());
+          router.refresh();
+          return;
+        }
+
+        setDeployingSlugs(getDeployingSlugs(targetPosts, data.posts));
+      } catch {
+        // Ignore transient poll errors; the next interval will retry.
+      }
+    };
+
+    void pollServerPosts();
+    const interval = window.setInterval(pollServerPosts, 8000);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(interval);
+    };
+  }, [siteStatus, router, savedPosts]);
 
   function updateSelected(patch: Partial<WhatsNewPostSource>) {
     if (selectedIndex < 0) return;
@@ -632,7 +650,8 @@ export default function AdminPostsManager({
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+          <AdminSiteStatus status={siteStatus} />
           <AdminHelpGuide />
           <Link
             href="/"
@@ -664,13 +683,6 @@ export default function AdminPostsManager({
         </button>
         <FieldHelp text="Add a new post, or click a post below to edit it." />
       </div>
-
-      {deployingSlugs.size > 0 && (
-        <p className="mb-4 rounded-xl border border-sky-500/30 bg-sky-500/10 px-4 py-3 text-sm text-sky-200">
-          Waiting for Vercel to redeploy — new or updated posts show a blue
-          &ldquo;Deploying…&rdquo; badge until the live admin list catches up.
-        </p>
-      )}
 
       {message && (
         <p className="mb-4 rounded-xl border border-accent-orange/30 bg-accent-orange/10 px-4 py-3 text-sm text-accent-orange">

@@ -41,6 +41,7 @@ const GUIDE_SECTIONS = [
     title: "Saving and going live",
     items: [
       "Click Save post when you are done. The live website updates in about 1–2 minutes.",
+      "Watch the Live / Deploying pill at the top — it flips to Live when your changes have published.",
       "A blue Deploying… badge on a post means it is waiting for the site to finish updating.",
       "An orange dot on a post means you have unsaved changes on that post.",
     ],
