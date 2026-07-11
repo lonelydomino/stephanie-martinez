@@ -63,15 +63,17 @@ export const whatsNewPostSources: WhatsNewPostSource[] = [
     imageAlt: "Paranormal investigation at This n That",
   },
   {
-    slug: "anime-expo-2026",
-    title: "Anime Expo — Spooky Cosplay & Panels",
+    slug: "paranormal-this-n-that-ep1",
     excerpt:
-      "Horror-anime panels, convention floor content, and spooky cosplay all weekend. Daily vlogs and outfit breakdowns are coming to TikTok.",
-    when: "July 2026",
-    category: "Convention",
-    status: "upcoming",
+      "Episode 1 with SoCal Spirit Seekers — investigating the antique store and museum at This n That, from first setup to the first unexplainable moments.",
+    category: "Investigation",
+    status: "recent",
+    href: "https://youtu.be/l8ocEidmYWU",
+    title:
+      "Paranormal Investigating at This n That Antique Store and Museum with SoCal Spirit Seekers Ep1",
+    when: "May 3, 2026",
     image: "/blog/anime-expo.jpg",
-    imageAlt: "Convention attendees in cosplay",
+    imageAlt: "Paranormal investigation at This n That antique store",
   },
   {
     slug: "halloween-in-july-haul",
