@@ -2,7 +2,7 @@
   "posts": [
     {
       "slug": "paranormal-investigating-at-this-n-that-antique-store-and-museum-with-socal-spir",
-      "excerpt": "Dvegrgr",
+      "excerpt": "TEST",
       "category": "Investigation",
       "status": "recent",
       "size": "small",
@@ -10,7 +10,8 @@
       "title": "TEST",
       "when": "May 3, 2026",
       "image": "https://i.ytimg.com/vi/l8ocEidmYWU/maxresdefault.jpg",
-      "imageAlt": "Paranormal Investigating at This n That Antique store and museum with SoCal Spirit Seakers. Ep. 1"
+      "imageAlt": "Paranormal Investigating at This n That Antique store and museum with SoCal Spirit Seakers. Ep. 1",
+      "coverPosition": "46% 85%"
     },
     {
       "slug": "new-orleans-most-haunted",
