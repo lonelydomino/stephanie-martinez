@@ -5,10 +5,10 @@
       "excerpt": "A tour through New Orleans' most haunted locations — legends, lore, and the spots that still give us chills.",
       "category": "Investigation",
       "status": "current",
+      "size": "large",
       "href": "https://youtu.be/3UlpjWwiyJM",
       "title": "New Orleans Most Haunted Locations",
       "when": "June 24, 2026",
-      "image": "/blog/paranormal-series.jpg",
       "imageAlt": "New Orleans haunted locations"
     },
     {
@@ -16,10 +16,10 @@
       "excerpt": "A haunted look inside The Roosevelt — ghost stories, eerie history, and the spots that still feel unsettling after dark.",
       "category": "Investigation",
       "status": "recent",
+      "size": "small",
       "href": "https://youtu.be/oZv7ngPe0i4",
       "title": "Haunted at The Roosevelt",
       "when": "June 23, 2026",
-      "image": "/blog/midsummer-scream.jpg",
       "imageAlt": "The Roosevelt hotel"
     },
     {
@@ -27,10 +27,10 @@
       "excerpt": "Episode 2 with SoCal Spirit Seekers — overnight investigating at This n That, EVPs, and the moments that kept us on edge.",
       "category": "Investigation",
       "status": "recent",
+      "size": "small",
       "href": "https://youtu.be/ePDTA_zQKGc",
       "title": "Paranormal Investigating at This n That with SoCal Spirit Seekers Ep2",
       "when": "May 3, 2026",
-      "image": "/blog/horror-premiere.jpg",
       "imageAlt": "Paranormal investigation at This n That"
     },
     {
@@ -38,10 +38,10 @@
       "excerpt": "Episode 1 with SoCal Spirit Seekers — investigating the antique store and museum at This n That, from first setup to the first unexplainable moments.",
       "category": "Investigation",
       "status": "recent",
+      "size": "small",
       "href": "https://youtu.be/l8ocEidmYWU",
       "title": "Paranormal Investigating at This n That Antique Store and Museum with SoCal Spirit Seekers Ep1",
       "when": "May 3, 2026",
-      "image": "/blog/anime-expo.jpg",
       "imageAlt": "Paranormal investigation at This n That antique store"
     },
     {
@@ -51,6 +51,7 @@
       "when": "June 2026",
       "category": "Shopping",
       "status": "recent",
+      "size": "small",
       "image": "/blog/halloween-haul.jpg",
       "imageAlt": "Halloween decorations and seasonal merchandise on display"
     },
@@ -61,8 +62,9 @@
       "when": "July 2026",
       "category": "Convention",
       "status": "recent",
+      "size": "large",
       "href": "https://www.instagram.com/p/DNw6vcj4ok_/",
-      "image": "/blog/midsummer-scream.jpg",
+      "coverImage": "/blog/midsummer-scream.png",
       "imageAlt": "Midsummer Scream horror convention"
     },
     {
@@ -72,8 +74,8 @@
       "when": "June 2026",
       "category": "Premiere",
       "status": "recent",
+      "size": "small",
       "href": "https://www.instagram.com/reel/DacKIkXh5xg/",
-      "image": "/blog/horror-premiere.jpg",
       "imageAlt": "Horror film premiere night"
     },
     {
@@ -83,8 +85,9 @@
       "when": "July 2026",
       "category": "Convention",
       "status": "upcoming",
-      "image": "/blog/anime-expo.jpg",
-      "imageAlt": "Convention attendees in cosplay"
+      "size": "large",
+      "coverImage": "/blog/anime-expo.png",
+      "imageAlt": "Anime Expo spooky cosplay and panels"
     }
   ]
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { Fragment, type ReactNode } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { ArrowUpRight, Calendar } from "lucide-react";
 import Image from "next/image";
@@ -44,25 +45,23 @@ type CardProps = {
   post: BlogPost;
   index: number;
   reduce: boolean | null;
-  featured?: boolean;
+  large?: boolean;
 };
 
-function BlogCard({ post, index, reduce, featured = false }: CardProps) {
+function BlogCard({ post, index, reduce, large = false }: CardProps) {
   const externalLink = post.href && post.href !== "#social";
 
   return (
     <motion.article
-      initial={reduce === false ? { y: featured ? 24 : 20 } : false}
+      initial={reduce === false ? { y: large ? 24 : 20 } : false}
       whileInView={reduce === false ? { y: 0 } : undefined}
       viewport={{ once: true, margin: "-40px" }}
-      transition={{ delay: featured ? 0 : index * 0.08, duration: 0.55 }}
-      className={`group flex flex-col overflow-hidden rounded-2xl border border-white/8 bg-bg-secondary/75 backdrop-blur-sm transition-colors duration-400 hover:border-accent-purple/30 ${
-        featured ? "lg:col-span-2" : ""
-      }`}
+      transition={{ delay: large ? 0 : index * 0.08, duration: 0.55 }}
+      className="group flex flex-col overflow-hidden rounded-2xl border border-white/8 bg-bg-secondary/75 backdrop-blur-sm transition-colors duration-400 hover:border-accent-purple/30"
     >
       <div
         className={`relative overflow-hidden ${
-          featured ? "aspect-[16/9] md:aspect-[21/9]" : "aspect-[4/3]"
+          large ? "aspect-[16/9] md:aspect-[21/9]" : "aspect-[16/9]"
         }`}
       >
         <Image
@@ -70,7 +69,7 @@ function BlogCard({ post, index, reduce, featured = false }: CardProps) {
           alt={post.imageAlt}
           fill
           sizes={
-            featured
+            large
               ? "(max-width: 1024px) 100vw, 66vw"
               : "(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
           }
@@ -85,17 +84,17 @@ function BlogCard({ post, index, reduce, featured = false }: CardProps) {
         </div>
       </div>
 
-      <div className={`flex flex-1 flex-col ${featured ? "p-6 md:p-8" : "p-5"}`}>
+      <div className={`flex flex-1 flex-col ${large ? "p-6 md:p-8" : "p-5"}`}>
         <h3
           className={`font-display font-semibold text-bone ${
-            featured ? "text-2xl md:text-3xl" : "text-lg md:text-xl"
+            large ? "text-2xl md:text-3xl" : "text-lg md:text-xl"
           }`}
         >
           {post.title}
         </h3>
         <p
           className={`mt-3 flex-1 leading-relaxed text-muted ${
-            featured ? "text-sm md:text-base" : "text-sm line-clamp-3"
+            large ? "text-sm md:text-base" : "text-sm line-clamp-3"
           }`}
         >
           {post.excerpt}
@@ -126,10 +125,63 @@ type WhatsNewProps = {
   posts: BlogPost[];
 };
 
+function renderOrderedPosts(
+  posts: BlogPost[],
+  reduce: boolean | null,
+) {
+  const blocks: ReactNode[] = [];
+  let smallBatch: BlogPost[] = [];
+  let smallIndex = 0;
+
+  const flushSmall = () => {
+    if (smallBatch.length === 0) return;
+    blocks.push(
+      <div
+        key={`grid-${smallBatch[0]?.slug}-${blocks.length}`}
+        className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
+      >
+        {smallBatch.map((post) => {
+          const card = (
+            <BlogCard
+              key={post.slug}
+              post={post}
+              index={smallIndex}
+              reduce={reduce}
+            />
+          );
+          smallIndex += 1;
+          return card;
+        })}
+      </div>,
+    );
+    smallBatch = [];
+  };
+
+  posts.forEach((post, index) => {
+    if (post.size === "large") {
+      flushSmall();
+      blocks.push(
+        <div key={post.slug} className={index < posts.length - 1 ? "mb-8" : ""}>
+          <BlogCard post={post} index={index} reduce={reduce} large />
+        </div>,
+      );
+    } else {
+      smallBatch.push(post);
+    }
+  });
+
+  flushSmall();
+
+  return blocks.map((block, index) => (
+    <Fragment key={`block-${index}`}>
+      {block}
+      {index < blocks.length - 1 ? <div className="mb-8" /> : null}
+    </Fragment>
+  ));
+}
+
 export default function WhatsNew({ posts }: WhatsNewProps) {
   const reduce = useReducedMotion();
-  const featured = posts.find((post) => post.status === "current");
-  const rest = posts.filter((post) => post.status !== "current");
 
   return (
     <Section
@@ -138,17 +190,7 @@ export default function WhatsNew({ posts }: WhatsNewProps) {
       subtitle="A peek at recent adventures, current projects, and what's haunting the calendar next."
       className="bg-gradient-to-b from-transparent via-accent-red/5 to-transparent"
     >
-      {featured && (
-        <div className="mb-8">
-          <BlogCard post={featured} index={0} reduce={reduce} featured />
-        </div>
-      )}
-
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {rest.map((post, i) => (
-          <BlogCard key={post.slug} post={post} index={i} reduce={reduce} />
-        ))}
-      </div>
+      {renderOrderedPosts(posts, reduce)}
     </Section>
   );
 }

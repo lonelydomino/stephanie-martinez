@@ -83,3 +83,69 @@ export async function writePostSources(
   await writePostSourcesGitHub(posts);
   return "github";
 }
+
+function getGitHubConfig() {
+  const token = process.env.GITHUB_TOKEN;
+  const repo = process.env.GITHUB_REPO ?? "lonelydomino/stephanie-martinez";
+
+  if (!token) {
+    throw new Error(
+      "GITHUB_TOKEN is not configured. Add it in Vercel environment variables to save from the live site.",
+    );
+  }
+
+  const [owner, repoName] = repo.split("/");
+  if (!owner || !repoName) {
+    throw new Error("GITHUB_REPO must look like owner/repo-name");
+  }
+
+  return { token, owner, repoName };
+}
+
+function githubHeaders(token: string) {
+  return {
+    Authorization: `Bearer ${token}`,
+    Accept: "application/vnd.github+json",
+    "X-GitHub-Api-Version": "2022-11-28",
+  };
+}
+
+export async function writeRepoFile(
+  repoPath: string,
+  contents: Buffer,
+  message: string,
+): Promise<"local" | "github"> {
+  if (process.env.NODE_ENV === "development") {
+    const fullPath = path.join(process.cwd(), repoPath);
+    await writeFile(fullPath, contents);
+    return "local";
+  }
+
+  const { token, owner, repoName } = getGitHubConfig();
+  const apiBase = `https://api.github.com/repos/${owner}/${repoName}/contents/${repoPath}`;
+  const headers = githubHeaders(token);
+
+  const current = await fetch(apiBase, { headers });
+  const sha =
+    current.ok ? ((await current.json()) as { sha: string }).sha : undefined;
+
+  const commit = await fetch(apiBase, {
+    method: "PUT",
+    headers: {
+      ...headers,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      message,
+      content: contents.toString("base64"),
+      ...(sha ? { sha } : {}),
+    }),
+  });
+
+  if (!commit.ok) {
+    const error = await commit.text();
+    throw new Error(`GitHub save failed (${commit.status}): ${error}`);
+  }
+
+  return "github";
+}
