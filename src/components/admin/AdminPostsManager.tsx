@@ -17,20 +17,20 @@ import {
 import Logo from "@/components/Logo";
 import {
   POST_CATEGORIES,
+  POST_SIZE_OPTIONS,
   POST_STATUS_OPTIONS,
+  slugify,
   type PostStatus,
   type WhatsNewPostSource,
 } from "@/lib/whatsNewPosts";
-import { isYouTubeUrl } from "@/lib/youtubeUtils";
-import { slugify } from "@/lib/whatsNewPosts";
 
 type Props = {
   initialPosts: WhatsNewPostSource[];
 };
 
-type YouTubePreview = {
-  title: string;
-  when: string;
+type LinkPreview = {
+  title?: string;
+  when?: string;
   image: string;
   imageAlt: string;
 };
@@ -41,9 +41,11 @@ function emptyPost(): WhatsNewPostSource {
     excerpt: "",
     category: "Investigation",
     status: "recent",
+    size: "small",
     href: "",
     title: "",
     when: "",
+    coverImage: "",
     image: "",
     imageAlt: "",
   };
@@ -63,7 +65,8 @@ export default function AdminPostsManager({ initialPosts }: Props) {
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
   const [previewing, setPreviewing] = useState(false);
-  const [preview, setPreview] = useState<YouTubePreview | null>(null);
+  const [preview, setPreview] = useState<LinkPreview | null>(null);
+  const [uploadingCover, setUploadingCover] = useState(false);
 
   const selectedIndex = posts.findIndex((post) => post.slug === selectedSlug);
   const selectedPost = selectedIndex >= 0 ? posts[selectedIndex] : null;
@@ -109,9 +112,9 @@ export default function AdminPostsManager({ initialPosts }: Props) {
     setPosts(next);
   }
 
-  async function previewYouTube() {
-    if (!selectedPost?.href || !isYouTubeUrl(selectedPost.href)) {
-      setError("Paste a YouTube link first.");
+  async function previewLink() {
+    if (!selectedPost?.href?.trim()) {
+      setError("Paste a YouTube or Instagram link first.");
       return;
     }
 
@@ -119,7 +122,7 @@ export default function AdminPostsManager({ initialPosts }: Props) {
     setError("");
     setMessage("");
 
-    const response = await fetch("/api/admin/youtube-preview", {
+    const response = await fetch("/api/admin/link-preview", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ url: selectedPost.href }),
@@ -129,20 +132,55 @@ export default function AdminPostsManager({ initialPosts }: Props) {
 
     if (!response.ok) {
       const data = (await response.json()) as { error?: string };
-      setError(data.error ?? "Could not load YouTube preview.");
+      setError(data.error ?? "Could not load link preview.");
       return;
     }
 
-    const data = (await response.json()) as YouTubePreview;
+    const data = (await response.json()) as LinkPreview;
     setPreview(data);
 
     updateSelected({
-      title: data.title,
-      when: data.when,
+      title: data.title ?? selectedPost.title,
+      when: data.when ?? selectedPost.when,
       image: data.image,
-      imageAlt: data.imageAlt,
-      slug: selectedPost.slug || slugify(data.title),
+      imageAlt: data.imageAlt ?? selectedPost.imageAlt,
+      slug: selectedPost.slug || slugify(data.title ?? selectedPost.excerpt),
     });
+  }
+
+  async function uploadCover(file: File) {
+    if (!selectedPost) return;
+
+    const slug = selectedPost.slug.trim() || slugify(selectedPost.title ?? "post");
+    if (!slug) {
+      setError("Add a title or slug before uploading a cover.");
+      return;
+    }
+
+    setUploadingCover(true);
+    setError("");
+    setMessage("");
+
+    const form = new FormData();
+    form.append("file", file);
+    form.append("slug", slug);
+
+    const response = await fetch("/api/admin/upload-cover", {
+      method: "POST",
+      body: form,
+    });
+
+    setUploadingCover(false);
+
+    if (!response.ok) {
+      const data = (await response.json()) as { error?: string };
+      setError(data.error ?? "Cover upload failed.");
+      return;
+    }
+
+    const data = (await response.json()) as { path: string };
+    updateSelected({ coverImage: data.path, slug });
+    setMessage("Cover uploaded. Click Save changes to publish it.");
   }
 
   async function savePosts() {
@@ -157,8 +195,10 @@ export default function AdminPostsManager({ initialPosts }: Props) {
       href: post.href?.trim() || undefined,
       title: post.title?.trim() || undefined,
       when: post.when?.trim() || undefined,
+      coverImage: post.coverImage?.trim() || undefined,
       image: post.image?.trim() || undefined,
       imageAlt: post.imageAlt?.trim() || undefined,
+      size: post.size ?? "small",
     }));
 
     const response = await fetch("/api/admin/posts", {
@@ -196,7 +236,8 @@ export default function AdminPostsManager({ initialPosts }: Props) {
               What&apos;s New Manager
             </h1>
             <p className="text-sm text-muted">
-              Add YouTube links, descriptions, and pick which post is featured.
+              Paste a link to preview scraped info, upload a custom cover, or
+              pick large vs small card size.
             </p>
           </div>
         </div>
@@ -282,6 +323,7 @@ export default function AdminPostsManager({ initialPosts }: Props) {
                   </p>
                   <p className="mt-1 text-xs text-muted">
                     {statusLabel(post.status)}
+                    {post.size === "large" ? " · Large" : " · Small"}
                     {post.when ? ` · ${post.when}` : ""}
                   </p>
                 </button>
@@ -325,14 +367,56 @@ export default function AdminPostsManager({ initialPosts }: Props) {
               Edit post
             </h2>
             <p className="mt-1 text-sm text-muted">
-              For YouTube videos, paste the link and click Preview — title, date,
-              and thumbnail fill in automatically.
+              Paste a YouTube or Instagram link and click Preview. Custom cover
+              images override scraped thumbnails.
             </p>
 
             <div className="mt-6 space-y-5">
+              <div className="grid gap-5 sm:grid-cols-2">
+                <div>
+                  <label className="text-sm font-medium text-bone">
+                    Card size
+                  </label>
+                  <select
+                    value={selectedPost.size ?? "small"}
+                    onChange={(event) =>
+                      updateSelected({
+                        size: event.target.value as WhatsNewPostSource["size"],
+                      })
+                    }
+                    className="mt-2 w-full rounded-xl border border-white/10 bg-bg-primary/80 px-4 py-3 text-sm text-bone outline-none focus:border-accent-purple/60"
+                  >
+                    {POST_SIZE_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-bone">Status</label>
+                  <select
+                    value={selectedPost.status}
+                    onChange={(event) =>
+                      updateSelected({
+                        status: event.target.value as PostStatus,
+                      })
+                    }
+                    className="mt-2 w-full rounded-xl border border-white/10 bg-bg-primary/80 px-4 py-3 text-sm text-bone outline-none focus:border-accent-purple/60"
+                  >
+                    {POST_STATUS_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
               <div>
                 <label className="text-sm font-medium text-bone">
-                  YouTube link
+                  YouTube or Instagram link
                 </label>
                 <div className="mt-2 flex flex-col gap-2 sm:flex-row">
                   <input
@@ -340,26 +424,72 @@ export default function AdminPostsManager({ initialPosts }: Props) {
                     onChange={(event) =>
                       updateSelected({ href: event.target.value })
                     }
-                    placeholder="https://youtu.be/..."
+                    placeholder="https://youtu.be/... or https://instagram.com/..."
                     className="w-full flex-1 rounded-xl border border-white/10 bg-bg-primary/80 px-4 py-3 text-sm text-bone outline-none focus:border-accent-purple/60"
                   />
                   <button
                     type="button"
-                    onClick={previewYouTube}
+                    onClick={previewLink}
                     disabled={previewing}
                     className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 px-4 py-3 text-sm font-medium text-bone hover:border-accent-purple/40 disabled:opacity-50"
                   >
                     <Play className="h-4 w-4 text-accent-orange" />
-                    {previewing ? "Loading…" : "Preview"}
+                    {previewing ? "Loading…" : "Preview link"}
                   </button>
                 </div>
               </div>
 
-              {(preview?.image || selectedPost.image) && (
-                <div className="relative aspect-video overflow-hidden rounded-xl border border-white/10">
+              <div>
+                <label className="text-sm font-medium text-bone">
+                  Cover image
+                </label>
+                <p className="mt-1 text-xs text-muted">
+                  Upload a custom cover, or leave empty to use the scraped
+                  thumbnail from the link.
+                </p>
+                <div className="mt-3 flex flex-wrap items-center gap-3">
+                  <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-white/10 px-4 py-2.5 text-sm text-bone hover:border-accent-purple/40">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(event) => {
+                        const file = event.target.files?.[0];
+                        if (file) void uploadCover(file);
+                        event.target.value = "";
+                      }}
+                    />
+                    {uploadingCover ? "Uploading…" : "Upload cover"}
+                  </label>
+                  {selectedPost.coverImage && (
+                    <button
+                      type="button"
+                      onClick={() => updateSelected({ coverImage: "" })}
+                      className="text-sm text-muted hover:text-accent-orange"
+                    >
+                      Use scraped image instead
+                    </button>
+                  )}
+                </div>
+                {selectedPost.coverImage && (
+                  <p className="mt-2 text-xs text-gold">
+                    Custom cover: {selectedPost.coverImage}
+                  </p>
+                )}
+              </div>
+
+              {(selectedPost.coverImage ||
+                preview?.image ||
+                selectedPost.image) && (
+                <div className="relative aspect-[16/9] overflow-hidden rounded-xl border border-white/10 md:aspect-[21/9]">
                   <Image
-                    src={preview?.image || selectedPost.image || ""}
-                    alt={preview?.title || selectedPost.title || "Preview"}
+                    src={
+                      selectedPost.coverImage ||
+                      preview?.image ||
+                      selectedPost.image ||
+                      ""
+                    }
+                    alt={selectedPost.title || "Cover preview"}
                     fill
                     className="object-cover"
                     sizes="(max-width: 768px) 100vw, 600px"
@@ -398,25 +528,6 @@ export default function AdminPostsManager({ initialPosts }: Props) {
                     {POST_CATEGORIES.map((category) => (
                       <option key={category} value={category}>
                         {category}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium text-bone">When</label>
-                  <select
-                    value={selectedPost.status}
-                    onChange={(event) =>
-                      updateSelected({
-                        status: event.target.value as PostStatus,
-                      })
-                    }
-                    className="mt-2 w-full rounded-xl border border-white/10 bg-bg-primary/80 px-4 py-3 text-sm text-bone outline-none focus:border-accent-purple/60"
-                  >
-                    {POST_STATUS_OPTIONS.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
                       </option>
                     ))}
                   </select>

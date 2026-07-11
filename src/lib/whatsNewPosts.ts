@@ -1,4 +1,5 @@
 export type PostStatus = "current" | "upcoming" | "recent";
+export type PostSize = "large" | "small";
 
 export type BlogPost = {
   slug: string;
@@ -7,6 +8,7 @@ export type BlogPost = {
   when: string;
   category: string;
   status: PostStatus;
+  size: PostSize;
   image: string;
   imageAlt: string;
   href?: string;
@@ -18,9 +20,13 @@ export type WhatsNewPostSource = {
   excerpt: string;
   category: string;
   status: PostStatus;
+  size?: PostSize;
   href?: string;
   title?: string;
   when?: string;
+  /** Custom cover image path (overrides scraped thumbnail). */
+  coverImage?: string;
+  /** Scraped or legacy fallback image when no cover is set. */
   image?: string;
   imageAlt?: string;
 };
@@ -33,6 +39,11 @@ export const POST_CATEGORIES = [
   "Travel",
   "Other",
 ] as const;
+
+export const POST_SIZE_OPTIONS: { value: PostSize; label: string }[] = [
+  { value: "large", label: "Large (featured width)" },
+  { value: "small", label: "Small (grid card)" },
+];
 
 export function slugify(value: string): string {
   return value
@@ -47,7 +58,7 @@ export const POST_STATUS_OPTIONS: {
   value: PostStatus;
   label: string;
 }[] = [
-  { value: "current", label: "Right Now (featured)" },
+  { value: "current", label: "Right Now" },
   { value: "recent", label: "Just Went" },
   { value: "upcoming", label: "Coming Up" },
 ];
