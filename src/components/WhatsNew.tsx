@@ -46,22 +46,24 @@ type CardProps = {
   index: number;
   reduce: boolean | null;
   large?: boolean;
+  wide?: boolean;
 };
 
-function BlogCard({ post, index, reduce, large = false }: CardProps) {
+function BlogCard({ post, index, reduce, large = false, wide = false }: CardProps) {
   const externalLink = post.href && post.href !== "#social";
+  const isHero = large || wide;
 
   return (
     <motion.article
-      initial={reduce === false ? { y: large ? 24 : 20 } : false}
+      initial={reduce === false ? { y: isHero ? 24 : 20 } : false}
       whileInView={reduce === false ? { y: 0 } : undefined}
       viewport={{ once: true, margin: "-40px" }}
-      transition={{ delay: large ? 0 : index * 0.08, duration: 0.55 }}
+      transition={{ delay: isHero ? 0 : index * 0.08, duration: 0.55 }}
       className="group flex flex-col overflow-hidden rounded-2xl border border-white/8 bg-bg-secondary/75 backdrop-blur-sm transition-colors duration-400 hover:border-accent-purple/30"
     >
       <div
         className={`relative overflow-hidden ${
-          large ? "aspect-[16/9] md:aspect-[21/9]" : "aspect-[16/9]"
+          isHero ? "aspect-[16/9] md:aspect-[21/9]" : "aspect-[16/9]"
         }`}
       >
         <Image
@@ -69,7 +71,7 @@ function BlogCard({ post, index, reduce, large = false }: CardProps) {
           alt={post.imageAlt}
           fill
           sizes={
-            large
+            isHero
               ? "(max-width: 1024px) 100vw, 66vw"
               : "(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
           }
@@ -84,17 +86,25 @@ function BlogCard({ post, index, reduce, large = false }: CardProps) {
         </div>
       </div>
 
-      <div className={`flex flex-1 flex-col ${large ? "p-6 md:p-8" : "p-5"}`}>
+      <div
+        className={`flex flex-1 flex-col ${
+          large ? "p-6 md:p-8" : wide ? "p-6" : "p-5"
+        }`}
+      >
         <h3
           className={`font-display font-semibold text-bone ${
-            large ? "text-2xl md:text-3xl" : "text-lg md:text-xl"
+            large
+              ? "text-2xl md:text-3xl"
+              : wide
+                ? "text-xl md:text-2xl"
+                : "text-lg md:text-xl"
           }`}
         >
           {post.title}
         </h3>
         <p
           className={`mt-3 flex-1 leading-relaxed text-muted ${
-            large ? "text-sm md:text-base" : "text-sm line-clamp-3"
+            large || wide ? "text-sm md:text-base" : "text-sm line-clamp-3"
           }`}
         >
           {post.excerpt}
@@ -125,6 +135,12 @@ type WhatsNewProps = {
   posts: BlogPost[];
 };
 
+function smallGridClass(count: number): string {
+  if (count === 1) return "";
+  if (count === 2) return "grid gap-6 sm:grid-cols-2";
+  return "grid gap-6 sm:grid-cols-2 lg:grid-cols-3";
+}
+
 function renderOrderedPosts(
   posts: BlogPost[],
   reduce: boolean | null,
@@ -135,25 +151,41 @@ function renderOrderedPosts(
 
   const flushSmall = () => {
     if (smallBatch.length === 0) return;
-    blocks.push(
-      <div
-        key={`grid-${smallBatch[0]?.slug}-${blocks.length}`}
-        className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
-      >
-        {smallBatch.map((post) => {
-          const card = (
-            <BlogCard
-              key={post.slug}
-              post={post}
-              index={smallIndex}
-              reduce={reduce}
-            />
-          );
-          smallIndex += 1;
-          return card;
-        })}
-      </div>,
-    );
+
+    if (smallBatch.length === 1) {
+      const post = smallBatch[0];
+      blocks.push(
+        <BlogCard
+          key={post.slug}
+          post={post}
+          index={smallIndex}
+          reduce={reduce}
+          wide
+        />,
+      );
+      smallIndex += 1;
+    } else {
+      blocks.push(
+        <div
+          key={`grid-${smallBatch[0]?.slug}-${blocks.length}`}
+          className={smallGridClass(smallBatch.length)}
+        >
+          {smallBatch.map((post) => {
+            const card = (
+              <BlogCard
+                key={post.slug}
+                post={post}
+                index={smallIndex}
+                reduce={reduce}
+              />
+            );
+            smallIndex += 1;
+            return card;
+          })}
+        </div>,
+      );
+    }
+
     smallBatch = [];
   };
 
