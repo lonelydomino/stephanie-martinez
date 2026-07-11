@@ -22,7 +22,7 @@ const platforms = [
   {
     name: "TikTok",
     description: "Behind-the-scenes videos, investigations, spooky finds",
-    href: "https://tiktok.com",
+    href: "https://www.tiktok.com/@simplyspookystephanie",
     Icon: TikTokIcon,
     variant: "red" as const,
     glow: "#7D1111",
