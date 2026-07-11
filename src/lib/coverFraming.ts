@@ -28,6 +28,30 @@ export function formatCoverPosition(focus: CoverFocus): string {
   return `${Math.round(focus.x)}% ${Math.round(focus.y)}%`;
 }
 
+/** Pan the focal point based on pointer drag (drag right moves image right). */
+export function panCoverFocus(
+  start: CoverFocus,
+  deltaXPx: number,
+  deltaYPx: number,
+  bounds: { width: number; height: number },
+  zoom = DEFAULT_COVER_ZOOM,
+): CoverFocus {
+  if (bounds.width <= 0 || bounds.height <= 0) {
+    return start;
+  }
+
+  const panStrength = Math.max(DEFAULT_COVER_ZOOM, zoom);
+
+  return {
+    x: clampPercent(
+      start.x - ((deltaXPx / bounds.width) * 100 * panStrength),
+    ),
+    y: clampPercent(
+      start.y - ((deltaYPx / bounds.height) * 100 * panStrength),
+    ),
+  };
+}
+
 export function normalizeCoverZoom(zoom?: number): number | undefined {
   if (zoom == null || !Number.isFinite(zoom) || zoom <= DEFAULT_COVER_ZOOM) {
     return undefined;
