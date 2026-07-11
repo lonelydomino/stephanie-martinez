@@ -12,7 +12,6 @@ import {
   Plus,
   Save,
   Trash2,
-  Play,
 } from "lucide-react";
 import Logo from "@/components/Logo";
 import {
@@ -21,12 +20,28 @@ import {
   POST_STATUS_OPTIONS,
   slugify,
   type PostStatus,
+  type ResolvedPostPreview,
   type WhatsNewPostSource,
 } from "@/lib/whatsNewPosts";
 
 type Props = {
   initialPosts: WhatsNewPostSource[];
+  resolvedPreviews: Record<string, ResolvedPostPreview>;
 };
+
+function postPreviewImage(
+  post: WhatsNewPostSource,
+  resolvedPreviews: Record<string, ResolvedPostPreview>,
+  livePreview: LinkPreview | null,
+): string {
+  return (
+    post.coverImage?.trim() ||
+    post.image?.trim() ||
+    (post.slug ? resolvedPreviews[post.slug]?.image : "") ||
+    livePreview?.image ||
+    ""
+  );
+}
 
 type LinkPreview = {
   title?: string;
@@ -55,7 +70,10 @@ function statusLabel(status: PostStatus): string {
   return POST_STATUS_OPTIONS.find((option) => option.value === status)?.label ?? status;
 }
 
-export default function AdminPostsManager({ initialPosts }: Props) {
+export default function AdminPostsManager({
+  initialPosts,
+  resolvedPreviews,
+}: Props) {
   const router = useRouter();
   const [posts, setPosts] = useState<WhatsNewPostSource[]>(initialPosts);
   const [selectedSlug, setSelectedSlug] = useState<string | null>(
@@ -80,6 +98,18 @@ export default function AdminPostsManager({ initialPosts }: Props) {
       clearTimeout(hrefDebounceRef.current);
       hrefDebounceRef.current = null;
     }
+  }, [selectedSlug]);
+
+  useEffect(() => {
+    if (!selectedPost) return;
+
+    const existingImage = postPreviewImage(selectedPost, resolvedPreviews, null);
+    if (existingImage) return;
+
+    const href = selectedPost.href?.trim();
+    if (!href) return;
+
+    void fetchLinkPreview(href);
   }, [selectedSlug]);
 
   const dirty = useMemo(
@@ -208,20 +238,6 @@ export default function AdminPostsManager({ initialPosts }: Props) {
     scheduleLinkPreview(href);
   }
 
-  async function previewLink() {
-    if (!selectedPost?.href?.trim()) {
-      setError("Paste a YouTube or Instagram link first.");
-      return;
-    }
-
-    if (hrefDebounceRef.current) {
-      clearTimeout(hrefDebounceRef.current);
-      hrefDebounceRef.current = null;
-    }
-
-    await fetchLinkPreview(selectedPost.href);
-  }
-
   async function uploadCover(file: File) {
     if (!selectedPost) return;
 
@@ -293,6 +309,10 @@ export default function AdminPostsManager({ initialPosts }: Props) {
     setMessage(data.message ?? "Saved!");
     router.refresh();
   }
+
+  const selectedDisplayImage = selectedPost
+    ? postPreviewImage(selectedPost, resolvedPreviews, preview)
+    : "";
 
   async function logout() {
     await fetch("/api/admin/logout", { method: "POST" });
@@ -441,9 +461,9 @@ export default function AdminPostsManager({ initialPosts }: Props) {
               Edit post
             </h2>
             <p className="mt-1 text-sm text-muted">
-              Paste a YouTube or Instagram link — title, date, and thumbnail
-              fill in automatically. Custom cover images override scraped
-              thumbnails.
+              Saved covers and linked posts show their preview right away.
+              Paste a new YouTube or Instagram link to update title, date, and
+              thumbnail automatically.
             </p>
 
             <div className="mt-6 space-y-5">
@@ -493,23 +513,12 @@ export default function AdminPostsManager({ initialPosts }: Props) {
                 <label className="text-sm font-medium text-bone">
                   YouTube or Instagram link
                 </label>
-                <div className="mt-2 flex flex-col gap-2 sm:flex-row">
-                  <input
-                    value={selectedPost.href ?? ""}
-                    onChange={(event) => handleHrefChange(event.target.value)}
-                    placeholder="https://youtu.be/... or https://instagram.com/..."
-                    className="w-full flex-1 rounded-xl border border-white/10 bg-bg-primary/80 px-4 py-3 text-sm text-bone outline-none focus:border-accent-purple/60"
-                  />
-                  <button
-                    type="button"
-                    onClick={previewLink}
-                    disabled={previewing}
-                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 px-4 py-3 text-sm font-medium text-bone hover:border-accent-purple/40 disabled:opacity-50"
-                  >
-                    <Play className="h-4 w-4 text-accent-orange" />
-                    {previewing ? "Loading…" : "Refresh"}
-                  </button>
-                </div>
+                <input
+                  value={selectedPost.href ?? ""}
+                  onChange={(event) => handleHrefChange(event.target.value)}
+                  placeholder="https://youtu.be/... or https://instagram.com/..."
+                  className="mt-2 w-full rounded-xl border border-white/10 bg-bg-primary/80 px-4 py-3 text-sm text-bone outline-none focus:border-accent-purple/60"
+                />
               </div>
 
               <div>
@@ -551,18 +560,11 @@ export default function AdminPostsManager({ initialPosts }: Props) {
                 )}
               </div>
 
-              {(selectedPost.coverImage ||
-                preview?.image ||
-                selectedPost.image) && (
+              {selectedDisplayImage && (
                 <div className="relative aspect-[16/9] overflow-hidden rounded-xl border border-white/10 md:aspect-[21/9]">
                   <Image
-                    key={`${selectedSlug}-${selectedPost.coverImage || preview?.image || selectedPost.image}`}
-                    src={
-                      selectedPost.coverImage ||
-                      preview?.image ||
-                      selectedPost.image ||
-                      ""
-                    }
+                    key={`${selectedSlug}-${selectedDisplayImage}`}
+                    src={selectedDisplayImage}
                     alt={selectedPost.title || "Cover preview"}
                     fill
                     className="object-cover"

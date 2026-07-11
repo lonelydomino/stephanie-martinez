@@ -14,6 +14,13 @@ export type BlogPost = {
   href?: string;
 };
 
+export type ResolvedPostPreview = {
+  image: string;
+  imageAlt: string;
+  title?: string;
+  when?: string;
+};
+
 /** Manual post fields. YouTube `href` values are enriched at build time. */
 export type WhatsNewPostSource = {
   slug: string;
