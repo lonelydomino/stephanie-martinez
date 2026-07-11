@@ -7,6 +7,7 @@ import {
   ArrowDown,
   ArrowUp,
   ExternalLink,
+  GripVertical,
   LogOut,
   Loader2,
   Plus,
@@ -205,6 +206,9 @@ export default function AdminPostsManager({
   const [uploadingCover, setUploadingCover] = useState(false);
   const [pendingNavigation, setPendingNavigation] =
     useState<PendingNavigation | null>(null);
+  const [rearrangeMode, setRearrangeMode] = useState(false);
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const previewRequestId = useRef(0);
   const hrefDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -258,6 +262,11 @@ export default function AdminPostsManager({
       ? "live"
       : "deploying";
   }, [deployingSlugs, initialPosts]);
+
+  const orderDirty = useMemo(
+    () => postsSnapshot(posts) !== postsSnapshot(savedPosts),
+    [posts, savedPosts],
+  );
 
   useEffect(() => {
     if (!hasUnsavedChanges) return;
@@ -365,10 +374,44 @@ export default function AdminPostsManager({
   function movePost(index: number, direction: -1 | 1) {
     const target = index + direction;
     if (target < 0 || target >= posts.length) return;
+    reorderPosts(index, target);
+  }
+
+  function reorderPosts(fromIndex: number, toIndex: number) {
+    if (fromIndex === toIndex) return;
+    if (fromIndex < 0 || toIndex < 0) return;
+    if (fromIndex >= posts.length || toIndex >= posts.length) return;
 
     const next = [...posts];
-    [next[index], next[target]] = [next[target], next[index]];
+    const [moved] = next.splice(fromIndex, 1);
+    next.splice(toIndex, 0, moved);
     setPosts(next);
+    setMessage("");
+    setError("");
+  }
+
+  function startRearrange() {
+    setRearrangeMode(true);
+    setMessage("");
+    setError("");
+  }
+
+  function cancelRearrange() {
+    setPosts(savedPosts.map((post) => ({ ...post })));
+    setRearrangeMode(false);
+    setDragIndex(null);
+    setDragOverIndex(null);
+    setMessage("");
+    setError("");
+  }
+
+  async function saveOrder() {
+    const saved = await savePosts();
+    if (saved) {
+      setRearrangeMode(false);
+      setDragIndex(null);
+      setDragOverIndex(null);
+    }
   }
 
   function selectPost(slug: string | null) {
@@ -383,10 +426,12 @@ export default function AdminPostsManager({
   ) {
     if (slug === selectedSlug) return;
 
-    if (!options?.skipUnsavedCheck && hasUnsavedChanges) {
+    if (!options?.skipUnsavedCheck && hasUnsavedChanges && !rearrangeMode) {
       setPendingNavigation({ slug });
       return;
     }
+
+    if (rearrangeMode) return;
 
     selectPost(slug);
   }
@@ -676,13 +721,52 @@ export default function AdminPostsManager({
         <button
           type="button"
           onClick={addPost}
-          className="inline-flex items-center gap-2 rounded-xl bg-accent-purple px-4 py-2.5 text-sm font-semibold text-bone hover:opacity-90"
+          disabled={rearrangeMode}
+          className="inline-flex items-center gap-2 rounded-xl bg-accent-purple px-4 py-2.5 text-sm font-semibold text-bone hover:opacity-90 disabled:opacity-50"
         >
           <Plus className="h-4 w-4" />
           Add post
         </button>
+        {posts.length > 1 &&
+          (rearrangeMode ? (
+            <>
+              <button
+                type="button"
+                onClick={() => void saveOrder()}
+                disabled={saving || !orderDirty}
+                className="inline-flex items-center gap-2 rounded-xl bg-accent-orange px-4 py-2.5 text-sm font-semibold text-bone hover:opacity-90 disabled:opacity-50"
+              >
+                <Save className="h-4 w-4" />
+                {saving ? "Saving…" : "Save"}
+              </button>
+              <button
+                type="button"
+                onClick={cancelRearrange}
+                disabled={saving}
+                className="inline-flex items-center gap-2 rounded-xl border border-white/10 px-4 py-2.5 text-sm text-muted hover:text-bone disabled:opacity-50"
+              >
+                Cancel
+              </button>
+            </>
+          ) : (
+            <button
+              type="button"
+              onClick={startRearrange}
+              className="inline-flex items-center gap-2 rounded-xl border border-white/10 px-4 py-2.5 text-sm text-bone hover:border-accent-purple/40"
+            >
+              <GripVertical className="h-4 w-4" />
+              Rearrange
+            </button>
+          ))}
         <FieldHelp text="Add a new post, or click a post below to edit it." />
       </div>
+
+      {rearrangeMode && (
+        <p className="mb-4 rounded-xl border border-accent-purple/30 bg-accent-purple/10 px-4 py-3 text-sm text-bone/90">
+          Drag posts to reorder them, or use the arrows. Click Save order when
+          you are finished.
+        </p>
+      )}
 
       {message && (
         <p className="mb-4 rounded-xl border border-accent-orange/30 bg-accent-orange/10 px-4 py-3 text-sm text-accent-orange">
@@ -696,25 +780,55 @@ export default function AdminPostsManager({
       )}
 
       <div className="grid gap-6 lg:grid-cols-[320px_minmax(0,1fr)]">
-        <aside className="space-y-3">
+        <aside className={`space-y-3 ${rearrangeMode ? "rounded-2xl border border-accent-purple/25 bg-accent-purple/5 p-3" : ""}`}>
           {posts.map((post, index) => {
             const key = post.slug || `draft-${index}`;
             const active =
-              selectedSlug === post.slug ||
-              (selectedSlug === "__new__" && !post.slug && index === selectedIndex);
+              !rearrangeMode &&
+              (selectedSlug === post.slug ||
+                (selectedSlug === "__new__" && !post.slug && index === selectedIndex));
             const postDirty = isPostDirty(post, savedPosts);
             const isDeploying = Boolean(post.slug && deployingSlugs.has(post.slug));
             const postIsNew = isNewDraft(post, savedPosts);
+            const isDragging = dragIndex === index;
+            const isDragOver = dragOverIndex === index && dragIndex !== index;
 
             return (
               <div
                 key={key}
+                draggable={rearrangeMode}
+                onDragStart={() => {
+                  setDragIndex(index);
+                  setDragOverIndex(index);
+                }}
+                onDragEnd={() => {
+                  setDragIndex(null);
+                  setDragOverIndex(null);
+                }}
+                onDragOver={(event) => {
+                  if (!rearrangeMode || dragIndex === null) return;
+                  event.preventDefault();
+                  setDragOverIndex(index);
+                }}
+                onDrop={(event) => {
+                  if (!rearrangeMode || dragIndex === null) return;
+                  event.preventDefault();
+                  reorderPosts(dragIndex, index);
+                  setDragIndex(null);
+                  setDragOverIndex(null);
+                }}
                 className={`relative overflow-hidden rounded-2xl border p-4 transition-all duration-200 ${
-                  isDeploying
+                  isDragging
+                    ? "scale-[0.98] opacity-60"
+                    : isDragOver
+                      ? "border-accent-purple/70 bg-accent-purple/15 shadow-[0_0_0_1px_color-mix(in_srgb,var(--accent-purple)_40%,transparent)]"
+                      : isDeploying
                     ? "border-sky-500/60 bg-sky-950/35 shadow-[0_0_0_1px_color-mix(in_srgb,#3b82f6_30%,transparent),0_0_20px_color-mix(in_srgb,#3b82f6_12%,transparent)]"
                     : active
                       ? "border-accent-orange/80 bg-accent-purple/25 shadow-[0_0_0_1px_color-mix(in_srgb,var(--accent-orange)_35%,transparent),0_0_24px_color-mix(in_srgb,var(--accent-orange)_18%,transparent)]"
-                      : "border-white/8 bg-bg-secondary/40 hover:border-white/20 hover:bg-bg-secondary/55"
+                      : rearrangeMode
+                        ? "cursor-grab border-white/12 bg-bg-secondary/50 hover:border-accent-purple/35 active:cursor-grabbing"
+                        : "border-white/8 bg-bg-secondary/40 hover:border-white/20 hover:bg-bg-secondary/55"
                 }`}
               >
                 {isDeploying && (
@@ -732,11 +846,20 @@ export default function AdminPostsManager({
                 <button
                   type="button"
                   onClick={() => requestSelectPost(post.slug || "__new__")}
-                  className={`w-full text-left ${active || isDeploying ? "pl-3" : ""}`}
+                  disabled={rearrangeMode}
+                  className={`w-full text-left ${active || isDeploying ? "pl-3" : ""} ${
+                    rearrangeMode ? "cursor-grab" : ""
+                  }`}
                 >
                   <div className="flex items-start justify-between gap-2">
+                    {rearrangeMode && (
+                      <GripVertical
+                        className="mt-0.5 h-4 w-4 shrink-0 text-accent-purple/80"
+                        aria-hidden
+                      />
+                    )}
                     <p
-                      className={`font-medium ${
+                      className={`flex-1 font-medium ${
                         active || isDeploying ? "text-bone" : "text-bone/90"
                       }`}
                     >
@@ -773,34 +896,39 @@ export default function AdminPostsManager({
                   </p>
                 </button>
 
-                <div className="mt-3 flex items-center gap-1">
-                  <button
-                    type="button"
-                    onClick={() => movePost(index, -1)}
-                    disabled={index === 0}
-                    className="rounded-lg border border-white/10 p-1.5 text-muted hover:text-bone disabled:opacity-30"
-                    aria-label="Move up"
-                  >
-                    <ArrowUp className="h-4 w-4" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => movePost(index, 1)}
-                    disabled={index === posts.length - 1}
-                    className="rounded-lg border border-white/10 p-1.5 text-muted hover:text-bone disabled:opacity-30"
-                    aria-label="Move down"
-                  >
-                    <ArrowDown className="h-4 w-4" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => deletePost(index)}
-                    className="ml-auto rounded-lg border border-white/10 p-1.5 text-muted hover:text-accent-orange"
-                    aria-label="Delete post"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </div>
+                {rearrangeMode ? (
+                  <div className="mt-3 flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => movePost(index, -1)}
+                      disabled={index === 0}
+                      className="rounded-lg border border-white/10 p-1.5 text-muted hover:text-bone disabled:opacity-30"
+                      aria-label="Move up"
+                    >
+                      <ArrowUp className="h-4 w-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => movePost(index, 1)}
+                      disabled={index === posts.length - 1}
+                      className="rounded-lg border border-white/10 p-1.5 text-muted hover:text-bone disabled:opacity-30"
+                      aria-label="Move down"
+                    >
+                      <ArrowDown className="h-4 w-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="mt-3 flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => deletePost(index)}
+                      className="ml-auto rounded-lg border border-white/10 p-1.5 text-muted hover:text-accent-orange"
+                      aria-label="Delete post"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                )}
               </div>
             );
           })}
