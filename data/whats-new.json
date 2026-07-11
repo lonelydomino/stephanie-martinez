@@ -1,19 +1,6 @@
 {
   "posts": [
     {
-      "slug": "paranormal-investigating-at-this-n-that-antique-store-and-museum-with-socal-spir",
-      "excerpt": "TEST55eyeryrey",
-      "category": "Investigation",
-      "status": "recent",
-      "size": "small",
-      "href": "https://youtu.be/l8ocEidmYWU?is=OJXv3BQmrU8k2gwy",
-      "title": "TESTsaedasd",
-      "when": "May 3, 2026",
-      "image": "https://i.ytimg.com/vi/l8ocEidmYWU/maxresdefault.jpg",
-      "imageAlt": "Paranormal Investigating at This n That Antique store and museum with SoCal Spirit Seakers. Ep. 1",
-      "coverPosition": "46% 85%"
-    },
-    {
       "slug": "new-orleans-most-haunted",
       "excerpt": "A tour through New Orleans' most haunted locations — legends, lore, and the spots that still give us chills.",
       "category": "Investigation",
@@ -36,6 +23,17 @@
       "imageAlt": "The Roosevelt hotel"
     },
     {
+      "slug": "paranormal-this-n-that-ep1",
+      "excerpt": "Episode 1 with SoCal Spirit Seekers — investigating the antique store and museum at This n That, from first setup to the first unexplainable moments.",
+      "category": "Investigation",
+      "status": "recent",
+      "size": "small",
+      "href": "https://youtu.be/l8ocEidmYWU",
+      "title": "Paranormal Investigating at This n That Antique Store and Museum with SoCal Spirit Seekers Ep1",
+      "when": "May 3, 2026",
+      "imageAlt": "Paranormal investigation at This n That antique store"
+    },
+    {
       "slug": "paranormal-this-n-that-ep2",
       "excerpt": "Episode 2 with SoCal Spirit Seekers — overnight investigating at This n That, EVPs, and the moments that kept us on edge.",
       "category": "Investigation",
@@ -47,15 +45,17 @@
       "imageAlt": "Paranormal investigation at This n That"
     },
     {
-      "slug": "paranormal-this-n-that-ep1",
-      "excerpt": "Episode 1 with SoCal Spirit Seekers — investigating the antique store and museum at This n That, from first setup to the first unexplainable moments.",
+      "slug": "paranormal-investigating-at-this-n-that-antique-store-and-museum-with-socal-spir",
+      "excerpt": "TEST55eyeryrey",
       "category": "Investigation",
       "status": "recent",
       "size": "small",
-      "href": "https://youtu.be/l8ocEidmYWU",
-      "title": "Paranormal Investigating at This n That Antique Store and Museum with SoCal Spirit Seekers Ep1",
+      "href": "https://youtu.be/l8ocEidmYWU?is=OJXv3BQmrU8k2gwy",
+      "title": "TESTsaedasd",
       "when": "May 3, 2026",
-      "imageAlt": "Paranormal investigation at This n That antique store"
+      "image": "https://i.ytimg.com/vi/l8ocEidmYWU/maxresdefault.jpg",
+      "imageAlt": "Paranormal Investigating at This n That Antique store and museum with SoCal Spirit Seakers. Ep. 1",
+      "coverPosition": "46% 85%"
     },
     {
       "slug": "halloween-in-july-haul",
