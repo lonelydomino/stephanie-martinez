@@ -769,12 +769,20 @@ export default function AdminPostsManager({
       )}
 
       {message && (
-        <p className="mb-4 rounded-xl border border-accent-orange/30 bg-accent-orange/10 px-4 py-3 text-sm text-accent-orange">
+        <p
+          className={`mb-4 rounded-xl border border-accent-orange/30 bg-accent-orange/10 px-4 py-3 text-sm text-accent-orange ${
+            selectedPost ? "hidden lg:block" : ""
+          }`}
+        >
           {message}
         </p>
       )}
       {error && (
-        <p className="mb-4 rounded-xl border border-accent-red/30 bg-accent-red/10 px-4 py-3 text-sm text-bone">
+        <p
+          className={`mb-4 rounded-xl border border-accent-red/30 bg-accent-red/10 px-4 py-3 text-sm text-bone ${
+            selectedPost ? "hidden lg:block" : ""
+          }`}
+        >
           {error}
         </p>
       )}
@@ -976,12 +984,26 @@ export default function AdminPostsManager({
               </div>
             </div>
 
-            {hasUnsavedChanges && !saving && (
-              <p className="mt-4 rounded-xl border border-gold/30 bg-gold/10 px-4 py-3 text-sm text-gold">
-                {isCreating
-                  ? "This new post has unsaved changes."
-                  : "This post has unsaved changes."}
-              </p>
+            {((hasUnsavedChanges && !saving) || error || message) && (
+              <div className="mt-4 space-y-3">
+                {hasUnsavedChanges && !saving && (
+                  <p className="rounded-xl border border-gold/30 bg-gold/10 px-4 py-3 text-sm text-gold">
+                    {isCreating
+                      ? "This new post has unsaved changes."
+                      : "This post has unsaved changes."}
+                  </p>
+                )}
+                {error && (
+                  <p className="rounded-xl border border-accent-red/30 bg-accent-red/10 px-4 py-3 text-sm text-bone lg:hidden">
+                    {error}
+                  </p>
+                )}
+                {message && (
+                  <p className="rounded-xl border border-accent-orange/30 bg-accent-orange/10 px-4 py-3 text-sm text-accent-orange lg:hidden">
+                    {message}
+                  </p>
+                )}
+              </div>
             )}
 
             <div className="mt-6 space-y-5">
