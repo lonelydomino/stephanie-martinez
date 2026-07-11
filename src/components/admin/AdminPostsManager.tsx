@@ -830,7 +830,7 @@ export default function AdminPostsManager({
                   <FieldLabel
                     htmlFor="post-status"
                     label="Status"
-                    help="Right Now = something current. Just Went = already posted. Coming Up = on the calendar soon. This shows as a small colored tag on the card."
+                    help="Right Now = something happening now. Just Went = an event you already went to. Coming Up = something on the calendar soon. This shows as a small colored tag on the card."
                   />
                   <select
                     id="post-status"
