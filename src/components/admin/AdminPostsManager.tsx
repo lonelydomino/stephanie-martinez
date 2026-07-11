@@ -360,22 +360,37 @@ export default function AdminPostsManager({
 
       setPreview(data);
 
-      if (selectedIndex < 0) return;
+      const draftIndex =
+        selectedSlug === "__new__"
+          ? posts.findIndex((post) => !post.slug?.trim())
+          : posts.findIndex((post) => post.slug === selectedSlug);
+
+      if (draftIndex < 0) return;
+
+      const currentPost = posts[draftIndex];
+      const newSlug =
+        currentPost.slug ||
+        slugify(data.title ?? currentPost.excerpt) ||
+        `draft-${Date.now()}`;
 
       setPosts((current) =>
         current.map((post, index) =>
-          index === selectedIndex
+          index === draftIndex
             ? {
                 ...post,
                 title: data.title ?? post.title,
                 when: data.when ?? post.when,
                 image: data.image,
                 imageAlt: data.imageAlt ?? post.imageAlt,
-                slug: post.slug || slugify(data.title ?? post.excerpt),
+                slug: newSlug,
               }
             : post,
         ),
       );
+
+      if (selectedSlug === "__new__") {
+        setSelectedSlug(newSlug);
+      }
     } finally {
       if (requestId === previewRequestId.current) {
         setPreviewing(false);
