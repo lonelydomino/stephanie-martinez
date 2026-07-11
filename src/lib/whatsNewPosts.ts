@@ -51,15 +51,16 @@ export const whatsNewPostSources: WhatsNewPostSource[] = [
     imageAlt: "The Roosevelt hotel",
   },
   {
-    slug: "horror-film-premiere",
-    title: "Horror Film Premiere Night",
+    slug: "paranormal-this-n-that-ep2",
     excerpt:
-      "Red carpet looks, an early screening, and first reactions from one of the summer's most anticipated slashers. Watch the premiere vlog for the full night out.",
-    when: "June 2026",
-    category: "Premiere",
+      "Episode 2 with SoCal Spirit Seekers — overnight investigating at This n That, EVPs, and the moments that kept us on edge.",
+    category: "Investigation",
     status: "recent",
+    href: "https://youtu.be/ePDTA_zQKGc",
+    title: "Paranormal Investigating at This n That with SoCal Spirit Seekers Ep2",
+    when: "May 3, 2026",
     image: "/blog/horror-premiere.jpg",
-    imageAlt: "Movie theater seats before a horror film screening",
+    imageAlt: "Paranormal investigation at This n That",
   },
   {
     slug: "anime-expo-2026",
