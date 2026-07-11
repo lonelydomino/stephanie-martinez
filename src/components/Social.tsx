@@ -14,7 +14,7 @@ const platforms = [
   {
     name: "Instagram",
     description: "Outfits, haunted locations, décor, exclusive content",
-    href: "https://instagram.com",
+    href: "https://www.instagram.com/simplyspookystephanie",
     Icon: InstagramIcon,
     variant: "purple" as const,
     glow: "#4A245A",

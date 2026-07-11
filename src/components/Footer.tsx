@@ -8,7 +8,7 @@ import {
 import Logo from "./Logo";
 
 const socials = [
-  { href: "https://instagram.com", label: "Instagram", Icon: InstagramIcon },
+  { href: "https://www.instagram.com/simplyspookystephanie", label: "Instagram", Icon: InstagramIcon },
   { href: "https://tiktok.com", label: "TikTok", Icon: TikTokIcon },
   { href: "https://youtube.com", label: "YouTube", Icon: YoutubeIcon },
   { href: "https://facebook.com", label: "Facebook", Icon: FacebookIcon },
