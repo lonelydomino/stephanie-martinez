@@ -12,6 +12,10 @@ export type BlogPost = {
   image: string;
   imageAlt: string;
   href?: string;
+  /** CSS object-position for cover framing, e.g. "50% 30%". */
+  coverPosition?: string;
+  /** Zoom level for cover crop (1 = default fit). */
+  coverZoom?: number;
 };
 
 export type ResolvedPostPreview = {
@@ -33,6 +37,10 @@ export type WhatsNewPostSource = {
   when?: string;
   /** Custom cover image path (overrides scraped thumbnail). */
   coverImage?: string;
+  /** CSS object-position for cover framing, e.g. "50% 30%". */
+  coverPosition?: string;
+  /** Zoom level for cover crop (1 = default fit). */
+  coverZoom?: number;
   /** Scraped or legacy fallback image when no cover is set. */
   image?: string;
   imageAlt?: string;

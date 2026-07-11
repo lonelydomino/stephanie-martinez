@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -15,7 +14,9 @@ import {
   Trash2,
 } from "lucide-react";
 import Logo from "@/components/Logo";
+import CoverFramingEditor from "@/components/admin/CoverFramingEditor";
 import { FieldHelp, FieldLabel } from "@/components/admin/FieldHelp";
+import { normalizeCoverZoom } from "@/lib/coverFraming";
 import {
   clearPendingDeploy,
   loadPendingDeploy,
@@ -68,6 +69,8 @@ function emptyPost(): WhatsNewPostSource {
     title: "",
     when: "",
     coverImage: "",
+    coverPosition: undefined,
+    coverZoom: undefined,
     image: "",
     imageAlt: "",
   };
@@ -86,6 +89,8 @@ function normalizePost(post: WhatsNewPostSource): WhatsNewPostSource {
     title: post.title?.trim() || undefined,
     when: post.when?.trim() || undefined,
     coverImage: post.coverImage?.trim() || undefined,
+    coverPosition: post.coverPosition?.trim() || undefined,
+    coverZoom: normalizeCoverZoom(post.coverZoom),
     image: post.image?.trim() || undefined,
     imageAlt: post.imageAlt?.trim() || undefined,
     size: post.size ?? "small",
@@ -484,6 +489,8 @@ export default function AdminPostsManager({
                 when: data.when ?? post.when,
                 image: data.image,
                 imageAlt: data.imageAlt ?? post.imageAlt,
+                coverPosition: undefined,
+                coverZoom: undefined,
                 slug: newSlug,
               }
             : post,
@@ -888,7 +895,13 @@ export default function AdminPostsManager({
                   {selectedPost.coverImage && (
                     <button
                       type="button"
-                      onClick={() => updateSelected({ coverImage: "" })}
+                      onClick={() =>
+                        updateSelected({
+                          coverImage: "",
+                          coverPosition: undefined,
+                          coverZoom: undefined,
+                        })
+                      }
                       className="text-sm text-muted hover:text-accent-orange"
                     >
                       Use scraped image instead
@@ -903,21 +916,19 @@ export default function AdminPostsManager({
               </div>
 
               {selectedDisplayImage && (
-                <div className="relative aspect-[16/9] overflow-hidden rounded-xl border border-white/10 md:aspect-[21/9]">
-                  <Image
-                    key={`${selectedSlug}-${selectedDisplayImage}`}
-                    src={selectedDisplayImage}
-                    alt={selectedPost.title || "Cover preview"}
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 768px) 100vw, 600px"
-                  />
-                  {previewing && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-bg-primary/60 text-sm text-bone">
-                      Loading preview…
-                    </div>
-                  )}
-                </div>
+                <CoverFramingEditor
+                  imageSrc={selectedDisplayImage}
+                  imageAlt={selectedPost.title || "Cover preview"}
+                  position={selectedPost.coverPosition}
+                  zoom={selectedPost.coverZoom}
+                  aspectClassName={
+                    selectedPost.size === "large"
+                      ? "aspect-[16/9] md:aspect-[21/9]"
+                      : "aspect-[16/9]"
+                  }
+                  loading={previewing}
+                  onChange={(update) => updateSelected(update)}
+                />
               )}
 
               <div>

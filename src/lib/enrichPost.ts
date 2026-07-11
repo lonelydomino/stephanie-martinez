@@ -106,5 +106,7 @@ export async function enrichPost(source: WhatsNewPostSource): Promise<BlogPost> 
     image,
     imageAlt,
     href: source.href,
+    coverPosition: source.coverPosition,
+    coverZoom: source.coverZoom,
   };
 }
