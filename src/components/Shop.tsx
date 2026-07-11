@@ -23,8 +23,7 @@ const shops = [
   {
     name: "Amazon Storefront",
     description: "Favorite décor, paranormal gear, fashion, everyday finds.",
-    href: "#",
-    Icon: Gift,
+    href: "https://a.co/d/08UtL2Pi",
     variant: "red" as const,
   },
   {
