@@ -618,13 +618,6 @@ export default function AdminPostsManager({
           <Plus className="h-4 w-4" />
           Add post
         </button>
-        {hasUnsavedChanges && !saving && (
-          <span className="text-sm text-gold">
-            {isCreating
-              ? "This new post has unsaved changes"
-              : "This post has unsaved changes"}
-          </span>
-        )}
       </div>
 
       {deployingSlugs.size > 0 && (
@@ -785,6 +778,14 @@ export default function AdminPostsManager({
                     : "Save post"}
               </button>
             </div>
+
+            {hasUnsavedChanges && !saving && (
+              <p className="rounded-xl border border-gold/30 bg-gold/10 px-4 py-3 text-sm text-gold">
+                {isCreating
+                  ? "This new post has unsaved changes."
+                  : "This post has unsaved changes."}
+              </p>
+            )}
 
             <div className="mt-6 space-y-5">
               <div className="grid gap-5 sm:grid-cols-2">
