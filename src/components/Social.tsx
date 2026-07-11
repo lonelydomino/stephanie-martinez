@@ -6,6 +6,7 @@ import GlowButton from "./ui/GlowButton";
 import {
   FacebookIcon,
   InstagramIcon,
+  SnapchatIcon,
   TikTokIcon,
   YoutubeIcon,
 } from "./icons/SocialIcons";
@@ -43,6 +44,14 @@ const platforms = [
     variant: "purple" as const,
     glow: "#4A245A",
   },
+  {
+    name: "Snapchat",
+    description: "Daily spooky snaps, BTS moments, and quick updates",
+    href: "https://www.snapchat.com/t/cLyAhQuI",
+    Icon: SnapchatIcon,
+    variant: "orange" as const,
+    glow: "#D96A16",
+  },
 ];
 
 export default function Social() {
@@ -50,7 +59,7 @@ export default function Social() {
 
   return (
     <Section id="social" title="Follow Me">
-      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         {platforms.map((p, i) => (
           <motion.article
             key={p.name}
