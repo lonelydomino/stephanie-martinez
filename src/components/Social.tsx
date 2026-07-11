@@ -30,7 +30,7 @@ const platforms = [
   {
     name: "YouTube",
     description: "Travel, investigations, conventions, longer videos",
-    href: "https://youtube.com",
+    href: "https://www.youtube.com/@simplyspookystephanie",
     Icon: YoutubeIcon,
     variant: "orange" as const,
     glow: "#D96A16",

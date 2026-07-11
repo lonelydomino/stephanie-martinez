@@ -25,7 +25,7 @@ const links = [
 const socials = [
   { href: "https://www.instagram.com/simplyspookystephanie", label: "Instagram", Icon: InstagramIcon },
   { href: "https://www.tiktok.com/@simplyspookystephanie", label: "TikTok", Icon: TikTokIcon },
-  { href: "https://youtube.com", label: "YouTube", Icon: YoutubeIcon },
+  { href: "https://www.youtube.com/@simplyspookystephanie", label: "YouTube", Icon: YoutubeIcon },
   { href: "https://facebook.com", label: "Facebook", Icon: FacebookIcon },
 ];
 
