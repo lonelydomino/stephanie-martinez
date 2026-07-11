@@ -1,0 +1,102 @@
+"use client";
+
+import { motion, useReducedMotion } from "framer-motion";
+import Section from "./ui/Section";
+import GlowButton from "./ui/GlowButton";
+import {
+  FacebookIcon,
+  InstagramIcon,
+  TikTokIcon,
+  YoutubeIcon,
+} from "./icons/SocialIcons";
+
+const platforms = [
+  {
+    name: "Instagram",
+    description: "Outfits, haunted locations, décor, exclusive content",
+    href: "https://instagram.com",
+    Icon: InstagramIcon,
+    variant: "purple" as const,
+    glow: "#4A245A",
+  },
+  {
+    name: "TikTok",
+    description: "Behind-the-scenes videos, investigations, spooky finds",
+    href: "https://tiktok.com",
+    Icon: TikTokIcon,
+    variant: "red" as const,
+    glow: "#7D1111",
+  },
+  {
+    name: "YouTube",
+    description: "Travel, investigations, conventions, longer videos",
+    href: "https://youtube.com",
+    Icon: YoutubeIcon,
+    variant: "orange" as const,
+    glow: "#D96A16",
+  },
+  {
+    name: "Facebook",
+    description: "Community, announcements, events",
+    href: "https://facebook.com",
+    Icon: FacebookIcon,
+    variant: "purple" as const,
+    glow: "#4A245A",
+  },
+];
+
+export default function Social() {
+  const reduce = useReducedMotion();
+
+  return (
+    <Section id="social" title="Follow Me">
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        {platforms.map((p, i) => (
+          <motion.article
+            key={p.name}
+            initial={reduce ? false : { opacity: 0, y: 28 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-40px" }}
+            transition={{ delay: i * 0.08, duration: 0.55 }}
+            whileHover={reduce ? undefined : { y: -6 }}
+            className="group relative flex flex-col overflow-hidden rounded-2xl border border-white/8 bg-bg-secondary/80 p-6 backdrop-blur-sm transition-shadow duration-500"
+            style={{
+              ["--glow-color" as string]: p.glow,
+              boxShadow: `0 0 0 0 transparent`,
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.boxShadow = `0 0 40px color-mix(in srgb, ${p.glow} 40%, transparent)`;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.boxShadow = `0 0 0 0 transparent`;
+            }}
+          >
+            <div
+              className="mb-5 flex h-14 w-14 items-center justify-center rounded-xl border border-white/10 bg-bg-primary/60 text-bone transition-colors group-hover:text-gold"
+              style={{
+                boxShadow: `inset 0 0 24px color-mix(in srgb, ${p.glow} 25%, transparent)`,
+              }}
+            >
+              <p.Icon className="h-7 w-7" />
+            </div>
+            <h3 className="font-display text-xl font-semibold text-bone">
+              {p.name}
+            </h3>
+            <p className="mt-2 flex-1 text-sm leading-relaxed text-muted">
+              {p.description}
+            </p>
+            <GlowButton
+              href={p.href}
+              external
+              variant={p.variant}
+              className="mt-6 w-full"
+              ariaLabel={`Follow on ${p.name}`}
+            >
+              {p.name}
+            </GlowButton>
+          </motion.article>
+        ))}
+      </div>
+    </Section>
+  );
+}
