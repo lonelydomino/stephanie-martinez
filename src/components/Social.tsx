@@ -7,6 +7,7 @@ import {
   FacebookIcon,
   InstagramIcon,
   SnapchatIcon,
+  ThreadsIcon,
   TikTokIcon,
   TumblrIcon,
   YoutubeIcon,
@@ -60,6 +61,14 @@ const platforms = [
     Icon: TumblrIcon,
     variant: "red" as const,
     glow: "#7D1111",
+  },
+  {
+    name: "Threads",
+    description: "Quick spooky updates, thoughts, and community chatter",
+    href: "https://www.threads.com/@simplyspookystephanie",
+    Icon: ThreadsIcon,
+    variant: "purple" as const,
+    glow: "#4A245A",
   },
 ];
 
