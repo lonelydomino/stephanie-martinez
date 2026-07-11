@@ -39,15 +39,16 @@ export const whatsNewPostSources: WhatsNewPostSource[] = [
     imageAlt: "New Orleans haunted locations",
   },
   {
-    slug: "midsummer-scream-2026",
-    title: "Midsummer Scream Horror Convention",
+    slug: "haunted-at-the-roosevelt",
     excerpt:
-      "Panels, cosplay, vendor hall treasures, and meetups with the spooky community. A full weekend of horror energy—recap posts and haul videos are live on socials.",
-    when: "July 2026",
-    category: "Convention",
+      "A haunted look inside The Roosevelt — ghost stories, eerie history, and the spots that still feel unsettling after dark.",
+    category: "Investigation",
     status: "recent",
+    href: "https://youtu.be/oZv7ngPe0i4",
+    title: "Haunted at The Roosevelt",
+    when: "June 23, 2026",
     image: "/blog/midsummer-scream.jpg",
-    imageAlt: "Crowd and booths at a horror convention",
+    imageAlt: "The Roosevelt hotel",
   },
   {
     slug: "horror-film-premiere",

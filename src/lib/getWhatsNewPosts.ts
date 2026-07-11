@@ -1,6 +1,6 @@
 import {
   fetchYouTubeMetadata,
-  formatYouTubeUploadDate,
+  formatYouTubeDate,
 } from "./youtube";
 import { isYouTubeUrl } from "./youtubeUtils";
 import {
@@ -22,10 +22,7 @@ async function enrichPost(source: WhatsNewPostSource): Promise<BlogPost> {
           status: source.status,
           href: source.href,
           title: youtube.title ?? source.title ?? "Untitled",
-          when:
-            formatYouTubeUploadDate(youtube.uploadDate) ??
-            source.when ??
-            "",
+          when: formatYouTubeDate(youtube.uploadDate) ?? source.when ?? "",
           image: youtube.thumbnailUrl ?? source.image ?? "",
           imageAlt: youtube.title ?? source.imageAlt ?? "",
         };
@@ -35,6 +32,20 @@ async function enrichPost(source: WhatsNewPostSource): Promise<BlogPost> {
         `YouTube enrichment failed for "${source.slug}", using manual fields.`,
         error,
       );
+    }
+
+    if (source.title && source.image && source.imageAlt && source.when) {
+      return {
+        slug: source.slug,
+        title: source.title,
+        excerpt: source.excerpt,
+        when: source.when,
+        category: source.category,
+        status: source.status,
+        image: source.image,
+        imageAlt: source.imageAlt,
+        href: source.href,
+      };
     }
   }
 

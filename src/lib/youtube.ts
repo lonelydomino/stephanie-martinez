@@ -1,4 +1,5 @@
 import {
+  formatYouTubeDate,
   formatYouTubeUploadDate,
   getYouTubeVideoId,
 } from "./youtubeUtils";
@@ -54,7 +55,7 @@ async function fetchWatchPageData(videoId: string): Promise<{
   }
 
   const html = await response.text();
-  const uploadDate = html.match(/"uploadDate":"([^"]+)"/)?.[1] ?? null;
+  const uploadDate = parseUploadDateFromHtml(html);
   const ogImage = html.match(/property="og:image" content="([^"]+)"/)?.[1];
 
   const thumbnailUrl =
@@ -83,6 +84,18 @@ async function resolveThumbnailUrl(videoId: string): Promise<string> {
   return `${THUMBNAIL_BASE}/${videoId}/hqdefault.jpg`;
 }
 
+function parseUploadDateFromHtml(html: string): string | null {
+  const isoDate = html.match(/"uploadDate":"([^"]+)"/)?.[1];
+  if (isoDate) return isoDate;
+
+  const publishDate = html.match(
+    /publishDate":\{"simpleText":"([^"]+)"/,
+  )?.[1];
+  if (publishDate) return publishDate;
+
+  return null;
+}
+
 export async function fetchYouTubeMetadata(
   url: string,
 ): Promise<YouTubeMetadata | null> {
@@ -107,4 +120,4 @@ export async function fetchYouTubeMetadata(
   };
 }
 
-export { formatYouTubeUploadDate, getYouTubeVideoId };
+export { formatYouTubeDate, formatYouTubeUploadDate, getYouTubeVideoId };
