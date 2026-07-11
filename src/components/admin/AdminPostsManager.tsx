@@ -760,9 +760,9 @@ export default function AdminPostsManager({
         </aside>
 
         {selectedPost ? (
-          <section className="rounded-2xl border border-white/8 bg-bg-secondary/60 p-6">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-              <div>
+          <section className="min-w-0 rounded-2xl border border-white/8 bg-bg-secondary/60 p-6">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+              <div className="min-w-0 flex-1">
                 <h2 className="font-display text-xl font-semibold text-bone">
                   {isCreating ? "Create new post" : "Edit post"}
                 </h2>
@@ -772,8 +772,8 @@ export default function AdminPostsManager({
                     : "Saved covers and linked posts show their preview right away. Paste a new YouTube, Instagram, TikTok, or Tumblr link to update title, date, and thumbnail automatically."}
                 </p>
               </div>
-              <div className="flex flex-col items-stretch gap-2 sm:items-end">
-                <div className="flex items-center justify-end gap-2">
+              <div className="flex w-full shrink-0 flex-col gap-2 lg:w-auto lg:items-end">
+                <div className="flex flex-wrap items-center justify-start gap-2 lg:justify-end">
                   <button
                     type="button"
                     onClick={saveCurrentPost}
@@ -790,6 +790,7 @@ export default function AdminPostsManager({
                         : "Save post"}
                   </button>
                   <FieldHelp
+                    align="end"
                     text={
                       isCreating
                         ? "Creates this new post on the website. After saving, allow 1–2 minutes for the live site to update."
@@ -801,7 +802,7 @@ export default function AdminPostsManager({
             </div>
 
             {hasUnsavedChanges && !saving && (
-              <p className="rounded-xl border border-gold/30 bg-gold/10 px-4 py-3 text-sm text-gold">
+              <p className="mt-4 rounded-xl border border-gold/30 bg-gold/10 px-4 py-3 text-sm text-gold">
                 {isCreating
                   ? "This new post has unsaved changes."
                   : "This post has unsaved changes."}
