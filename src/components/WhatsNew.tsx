@@ -138,7 +138,7 @@ function BlogCard({ post, index, reduce, featured = false }: CardProps) {
       whileInView={reduce === false ? { y: 0 } : undefined}
       viewport={{ once: true, margin: "-40px" }}
       transition={{ delay: featured ? 0 : index * 0.08, duration: 0.55 }}
-      className={`group flex flex-col overflow-hidden rounded-2xl border border-white/8 bg-bg-secondary/50 transition-colors duration-400 hover:border-accent-purple/30 ${
+      className={`group flex flex-col overflow-hidden rounded-2xl border border-white/8 bg-bg-secondary/75 backdrop-blur-sm transition-colors duration-400 hover:border-accent-purple/30 ${
         featured ? "lg:col-span-2" : ""
       }`}
     >
