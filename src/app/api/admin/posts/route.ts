@@ -19,9 +19,12 @@ export async function PUT(request: Request) {
   }
 
   const body = (await request.json()) as { posts?: WhatsNewPostSource[] };
-  const posts = body.posts;
+  const posts = (body.posts ?? []).map((post) => ({
+    ...post,
+    category: post.category?.trim() || "Investigation",
+  }));
 
-  if (!Array.isArray(posts) || posts.length === 0) {
+  if (!Array.isArray(body.posts) || posts.length === 0) {
     return NextResponse.json(
       { error: "Posts must be a non-empty array." },
       { status: 400 },
@@ -29,9 +32,9 @@ export async function PUT(request: Request) {
   }
 
   for (const post of posts) {
-    if (!post.slug?.trim() || !post.excerpt?.trim() || !post.category) {
+    if (!post.slug?.trim() || !post.excerpt?.trim()) {
       return NextResponse.json(
-        { error: "Each post needs a slug, description, and category." },
+        { error: "Each post needs a slug and description." },
         { status: 400 },
       );
     }

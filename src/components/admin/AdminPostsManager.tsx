@@ -95,6 +95,7 @@ function normalizePost(post: WhatsNewPostSource): WhatsNewPostSource {
     image: post.image?.trim() || undefined,
     imageAlt: post.imageAlt?.trim() || undefined,
     size: post.size ?? "small",
+    category: post.category?.trim() || "Investigation",
   };
 }
 
@@ -370,9 +371,9 @@ export default function AdminPostsManager({
     const normalized = posts.map(normalizePost);
 
     for (const post of normalized) {
-      if (!post.slug || !post.excerpt || !post.category) {
+      if (!post.slug || !post.excerpt) {
         setSaving(false);
-        setError("Each post needs a description and category before saving.");
+        setError("Each post needs a description before saving.");
         return false;
       }
     }
