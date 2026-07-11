@@ -16,6 +16,7 @@ const GUIDE_SECTIONS = [
     title: "Adding a post from a link",
     items: [
       "Paste a YouTube, Instagram, TikTok, or Tumblr link and the site fills in the title, date, and thumbnail.",
+      "You can edit the title and date fields directly if you want different wording.",
       "Write a short description — that is the only required field besides the link.",
       "Category defaults to Investigation. Change it only if you want a different label on the card.",
     ],
@@ -42,13 +43,6 @@ const GUIDE_SECTIONS = [
       "Click Save post when you are done. The live website updates in about 1–2 minutes.",
       "A blue Deploying… badge on a post means it is waiting for the site to finish updating.",
       "An orange dot on a post means you have unsaved changes on that post.",
-    ],
-  },
-  {
-    title: "Optional overrides",
-    items: [
-      "Open Optional overrides only if you want to change the auto-filled title or date text.",
-      "You can leave those alone.",
     ],
   },
 ] as const;

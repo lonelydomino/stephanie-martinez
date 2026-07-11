@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import {
   ArrowDown,
   ArrowUp,
-  ChevronDown,
   ExternalLink,
   LogOut,
   Loader2,
@@ -911,6 +910,39 @@ export default function AdminPostsManager({
                 />
               </div>
 
+              <div className="grid gap-5 sm:grid-cols-2">
+                <div>
+                  <FieldLabel
+                    htmlFor="post-title"
+                    label="Title"
+                    help="The headline shown on the website. Paste a link to fill this in automatically, or type your own."
+                  />
+                  <input
+                    id="post-title"
+                    value={selectedPost.title ?? ""}
+                    onChange={(event) =>
+                      updateSelected({ title: event.target.value })
+                    }
+                    className="mt-2 w-full rounded-xl border border-white/10 bg-bg-primary/80 px-4 py-3 text-sm text-bone outline-none focus:border-accent-purple/60"
+                  />
+                </div>
+                <div>
+                  <FieldLabel
+                    htmlFor="post-date"
+                    label="Date label"
+                    help="The date text shown on the card, like 'July 2026'. Paste a link to fill this in automatically, or type your own."
+                  />
+                  <input
+                    id="post-date"
+                    value={selectedPost.when ?? ""}
+                    onChange={(event) =>
+                      updateSelected({ when: event.target.value })
+                    }
+                    className="mt-2 w-full rounded-xl border border-white/10 bg-bg-primary/80 px-4 py-3 text-sm text-bone outline-none focus:border-accent-purple/60"
+                  />
+                </div>
+              </div>
+
               <div>
                 <div className="flex flex-wrap items-center gap-x-2 gap-y-3">
                   <span className="text-sm font-medium text-bone">
@@ -1023,53 +1055,6 @@ export default function AdminPostsManager({
                   </select>
                 </div>
               </div>
-
-              <details className="group rounded-xl border border-white/8 bg-bg-primary/40 p-4">
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-medium text-gold [&::-webkit-details-marker]:hidden">
-                  <span className="flex items-center gap-2">
-                    <span>Optional overrides</span>
-                    <FieldHelp text="Only use these if you want to change the title or date text from what was pulled in automatically. You can leave these alone." />
-                  </span>
-                  <ChevronDown
-                    className="h-4 w-4 shrink-0 text-muted transition-transform duration-200 group-open:rotate-180"
-                    aria-hidden
-                  />
-                </summary>
-                <div className="mt-4 space-y-4">
-                  <div>
-                    <FieldLabel
-                      htmlFor="post-title-override"
-                      label="Title"
-                      help="Change the headline shown on the website. Leave blank to keep the title from YouTube or Instagram."
-                      muted
-                    />
-                    <input
-                      id="post-title-override"
-                      value={selectedPost.title ?? ""}
-                      onChange={(event) =>
-                        updateSelected({ title: event.target.value })
-                      }
-                      className="mt-2 w-full rounded-xl border border-white/10 bg-bg-primary/80 px-4 py-3 text-sm text-bone outline-none focus:border-accent-purple/60"
-                    />
-                  </div>
-                  <div>
-                    <FieldLabel
-                      htmlFor="post-date-override"
-                      label="Date label"
-                      help="The date text shown on the card, like 'July 2026'. Edit this only if you want different wording."
-                      muted
-                    />
-                    <input
-                      id="post-date-override"
-                      value={selectedPost.when ?? ""}
-                      onChange={(event) =>
-                        updateSelected({ when: event.target.value })
-                      }
-                      className="mt-2 w-full rounded-xl border border-white/10 bg-bg-primary/80 px-4 py-3 text-sm text-bone outline-none focus:border-accent-purple/60"
-                    />
-                  </div>
-                </div>
-              </details>
             </div>
           </section>
         ) : (
