@@ -53,6 +53,36 @@
       "status": "recent",
       "image": "/blog/halloween-haul.jpg",
       "imageAlt": "Halloween decorations and seasonal merchandise on display"
+    },
+    {
+      "slug": "midsummer-scream-2026",
+      "title": "Midsummer Scream Horror Convention",
+      "excerpt": "Panels, cosplay, vendor hall treasures, and meetups with the spooky community. A full weekend of horror energy—recap posts and haul videos are live on socials.",
+      "when": "July 2026",
+      "category": "Convention",
+      "status": "recent",
+      "image": "/blog/midsummer-scream.jpg",
+      "imageAlt": "Crowd and booths at a horror convention"
+    },
+    {
+      "slug": "horror-film-premiere",
+      "title": "Horror Film Premiere Night",
+      "excerpt": "Red carpet looks, an early screening, and first reactions from one of the summer's most anticipated slashers. Watch the premiere vlog for the full night out.",
+      "when": "June 2026",
+      "category": "Premiere",
+      "status": "recent",
+      "image": "/blog/horror-premiere.jpg",
+      "imageAlt": "Movie theater seats before a horror film screening"
+    },
+    {
+      "slug": "anime-expo-2026",
+      "title": "Anime Expo — Spooky Cosplay & Panels",
+      "excerpt": "Horror-anime panels, convention floor content, and spooky cosplay all weekend. Daily vlogs and outfit breakdowns are coming to TikTok.",
+      "when": "July 2026",
+      "category": "Convention",
+      "status": "upcoming",
+      "image": "/blog/anime-expo.jpg",
+      "imageAlt": "Convention attendees in cosplay"
     }
   ]
 }
