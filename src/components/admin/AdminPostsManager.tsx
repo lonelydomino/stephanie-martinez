@@ -150,11 +150,27 @@ function getDeployingSlugs(
   pending: WhatsNewPostSource[],
   server: WhatsNewPostSource[],
 ): Set<string> {
-  const serverSlugs = new Set(server.map((post) => post.slug));
+  const serverBySlug = new Map(
+    server.map((post) => [post.slug, normalizePost(post)]),
+  );
+
   return new Set(
-    pending.filter((post) => post.slug && !serverSlugs.has(post.slug)).map(
-      (post) => post.slug!,
-    ),
+    pending
+      .filter((post) => {
+        const slug = post.slug?.trim();
+        if (!slug) return false;
+
+        const normalizedPending = normalizePost(post);
+        const normalizedServer = serverBySlug.get(slug);
+
+        if (!normalizedServer) return true;
+
+        return (
+          JSON.stringify(normalizedPending) !==
+          JSON.stringify(normalizedServer)
+        );
+      })
+      .map((post) => post.slug!),
   );
 }
 
