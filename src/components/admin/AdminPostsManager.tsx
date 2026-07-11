@@ -70,12 +70,71 @@ function statusLabel(status: PostStatus): string {
   return POST_STATUS_OPTIONS.find((option) => option.value === status)?.label ?? status;
 }
 
+function normalizePost(post: WhatsNewPostSource): WhatsNewPostSource {
+  return {
+    ...post,
+    slug: post.slug.trim() || slugify(post.title ?? post.excerpt),
+    excerpt: post.excerpt.trim(),
+    href: post.href?.trim() || undefined,
+    title: post.title?.trim() || undefined,
+    when: post.when?.trim() || undefined,
+    coverImage: post.coverImage?.trim() || undefined,
+    image: post.image?.trim() || undefined,
+    imageAlt: post.imageAlt?.trim() || undefined,
+    size: post.size ?? "small",
+  };
+}
+
+function postsSnapshot(posts: WhatsNewPostSource[]): string {
+  return JSON.stringify(posts.map(normalizePost));
+}
+
+function findSavedIndex(
+  post: WhatsNewPostSource,
+  savedPosts: WhatsNewPostSource[],
+): number {
+  const slug = post.slug?.trim();
+  if (!slug) return -1;
+  return savedPosts.findIndex((saved) => saved.slug === slug);
+}
+
+function isPostDirty(
+  post: WhatsNewPostSource,
+  index: number,
+  savedPosts: WhatsNewPostSource[],
+): boolean {
+  if (!post.slug?.trim()) {
+    return Boolean(
+      post.excerpt.trim() ||
+        post.href?.trim() ||
+        post.title?.trim() ||
+        post.coverImage?.trim() ||
+        post.image?.trim(),
+    );
+  }
+
+  const savedIndex = findSavedIndex(post, savedPosts);
+  if (savedIndex < 0) return true;
+
+  const orderDirty = savedIndex !== index;
+  const fieldDirty =
+    JSON.stringify(normalizePost(post)) !==
+    JSON.stringify(normalizePost(savedPosts[savedIndex]));
+
+  return orderDirty || fieldDirty;
+}
+
+type PendingNavigation = {
+  slug: string | null;
+};
+
 export default function AdminPostsManager({
   initialPosts,
   resolvedPreviews,
 }: Props) {
   const router = useRouter();
   const [posts, setPosts] = useState<WhatsNewPostSource[]>(initialPosts);
+  const [savedPosts, setSavedPosts] = useState<WhatsNewPostSource[]>(initialPosts);
   const [selectedSlug, setSelectedSlug] = useState<string | null>(
     initialPosts[0]?.slug ?? null,
   );
@@ -85,10 +144,18 @@ export default function AdminPostsManager({
   const [previewing, setPreviewing] = useState(false);
   const [preview, setPreview] = useState<LinkPreview | null>(null);
   const [uploadingCover, setUploadingCover] = useState(false);
+  const [pendingNavigation, setPendingNavigation] =
+    useState<PendingNavigation | null>(null);
   const previewRequestId = useRef(0);
   const hrefDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const selectedIndex = posts.findIndex((post) => post.slug === selectedSlug);
+  const selectedIndex = useMemo(() => {
+    if (!selectedSlug) return -1;
+    if (selectedSlug === "__new__") {
+      return posts.findIndex((post) => !post.slug?.trim());
+    }
+    return posts.findIndex((post) => post.slug === selectedSlug);
+  }, [posts, selectedSlug]);
   const selectedPost = selectedIndex >= 0 ? posts[selectedIndex] : null;
 
   useEffect(() => {
@@ -112,10 +179,22 @@ export default function AdminPostsManager({
     void fetchLinkPreview(href);
   }, [selectedSlug]);
 
-  const dirty = useMemo(
-    () => JSON.stringify(posts) !== JSON.stringify(initialPosts),
-    [posts, initialPosts],
+  const hasUnsavedChanges = useMemo(
+    () => postsSnapshot(posts) !== postsSnapshot(savedPosts),
+    [posts, savedPosts],
   );
+
+  useEffect(() => {
+    if (!hasUnsavedChanges) return;
+
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [hasUnsavedChanges]);
 
   function updateSelected(patch: Partial<WhatsNewPostSource>) {
     if (selectedIndex < 0) return;
@@ -129,9 +208,14 @@ export default function AdminPostsManager({
   }
 
   function addPost() {
+    if (hasUnsavedChanges) {
+      setPendingNavigation({ slug: "__new__" });
+      return;
+    }
+
     const post = emptyPost();
     setPosts((current) => [post, ...current]);
-    selectPost(post.slug || "__new__");
+    selectPost("__new__");
   }
 
   function deletePost(index: number) {
@@ -139,7 +223,7 @@ export default function AdminPostsManager({
     const next = posts.filter((_, postIndex) => postIndex !== index);
     setPosts(next);
     if (selectedSlug === slug || selectedSlug === "__new__") {
-      selectPost(next[0]?.slug ?? null);
+      requestSelectPost(next[0]?.slug ?? null, { skipUnsavedCheck: true });
     }
   }
 
@@ -156,6 +240,95 @@ export default function AdminPostsManager({
     setSelectedSlug(slug);
     setMessage("");
     setError("");
+  }
+
+  function requestSelectPost(
+    slug: string | null,
+    options?: { skipUnsavedCheck?: boolean },
+  ) {
+    if (slug === selectedSlug) return;
+
+    if (!options?.skipUnsavedCheck && hasUnsavedChanges) {
+      setPendingNavigation({ slug });
+      return;
+    }
+
+    selectPost(slug);
+  }
+
+  function discardUnsavedChanges() {
+    setPosts(savedPosts.map((post) => ({ ...post })));
+    setMessage("");
+    setError("");
+  }
+
+  function handleLeaveWithoutSaving() {
+    if (!pendingNavigation) return;
+
+    const nextSlug = pendingNavigation.slug;
+    discardUnsavedChanges();
+    setPendingNavigation(null);
+    selectPost(nextSlug);
+  }
+
+  async function savePosts(): Promise<boolean> {
+    setSaving(true);
+    setMessage("");
+    setError("");
+
+    const normalized = posts.map(normalizePost);
+
+    for (const post of normalized) {
+      if (!post.slug || !post.excerpt || !post.category) {
+        setSaving(false);
+        setError("Each post needs a description and category before saving.");
+        return false;
+      }
+    }
+
+    const response = await fetch("/api/admin/posts", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ posts: normalized }),
+    });
+
+    setSaving(false);
+
+    if (!response.ok) {
+      const data = (await response.json()) as { error?: string };
+      setError(data.error ?? "Save failed.");
+      return false;
+    }
+
+    const data = (await response.json()) as { message?: string };
+    setSavedPosts(normalized);
+    setPosts(normalized);
+    setMessage(data.message ?? "Saved!");
+    router.refresh();
+    return true;
+  }
+
+  async function handleSaveAndLeave() {
+    if (!pendingNavigation) return;
+
+    const nextSlug = pendingNavigation.slug;
+    const saved = await savePosts();
+    if (!saved) return;
+
+    setPendingNavigation(null);
+
+    if (nextSlug === "__new__") {
+      const post = emptyPost();
+      setPosts((current) => [post, ...current]);
+      selectPost("__new__");
+      return;
+    }
+
+    selectPost(nextSlug);
+  }
+
+  async function saveCurrentPost() {
+    await savePosts();
   }
 
   async function fetchLinkPreview(href: string) {
@@ -270,44 +443,7 @@ export default function AdminPostsManager({
 
     const data = (await response.json()) as { path: string };
     updateSelected({ coverImage: data.path, slug });
-    setMessage("Cover uploaded. Click Save changes to publish it.");
-  }
-
-  async function savePosts() {
-    setSaving(true);
-    setMessage("");
-    setError("");
-
-    const normalized = posts.map((post) => ({
-      ...post,
-      slug: post.slug.trim() || slugify(post.title ?? post.excerpt),
-      excerpt: post.excerpt.trim(),
-      href: post.href?.trim() || undefined,
-      title: post.title?.trim() || undefined,
-      when: post.when?.trim() || undefined,
-      coverImage: post.coverImage?.trim() || undefined,
-      image: post.image?.trim() || undefined,
-      imageAlt: post.imageAlt?.trim() || undefined,
-      size: post.size ?? "small",
-    }));
-
-    const response = await fetch("/api/admin/posts", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ posts: normalized }),
-    });
-
-    setSaving(false);
-
-    if (!response.ok) {
-      const data = (await response.json()) as { error?: string };
-      setError(data.error ?? "Save failed.");
-      return;
-    }
-
-    const data = (await response.json()) as { message?: string };
-    setMessage(data.message ?? "Saved!");
-    router.refresh();
+    setMessage("Cover uploaded. Click Save post to publish it.");
   }
 
   const selectedDisplayImage = selectedPost
@@ -365,17 +501,8 @@ export default function AdminPostsManager({
           <Plus className="h-4 w-4" />
           Add post
         </button>
-        <button
-          type="button"
-          onClick={savePosts}
-          disabled={saving || !dirty}
-          className="inline-flex items-center gap-2 rounded-xl bg-accent-orange px-4 py-2.5 text-sm font-semibold text-bone hover:opacity-90 disabled:opacity-50"
-        >
-          <Save className="h-4 w-4" />
-          {saving ? "Saving…" : "Save changes"}
-        </button>
-        {dirty && !saving && (
-          <span className="text-sm text-gold">You have unsaved changes</span>
+        {hasUnsavedChanges && !saving && (
+          <span className="text-sm text-gold">This post has unsaved changes</span>
         )}
       </div>
 
@@ -397,6 +524,7 @@ export default function AdminPostsManager({
             const active =
               selectedSlug === post.slug ||
               (selectedSlug === "__new__" && !post.slug && index === selectedIndex);
+            const postDirty = isPostDirty(post, index, savedPosts);
 
             return (
               <div
@@ -415,7 +543,7 @@ export default function AdminPostsManager({
                 )}
                 <button
                   type="button"
-                  onClick={() => selectPost(post.slug || "__new__")}
+                  onClick={() => requestSelectPost(post.slug || "__new__")}
                   className={`w-full text-left ${active ? "pl-3" : ""}`}
                 >
                   <div className="flex items-start justify-between gap-2">
@@ -426,11 +554,19 @@ export default function AdminPostsManager({
                     >
                       {post.title || post.excerpt || "New post"}
                     </p>
-                    {active && (
-                      <span className="shrink-0 rounded-full border border-accent-orange/50 bg-accent-orange/15 px-2 py-0.5 text-[0.6rem] font-bold uppercase tracking-wider text-accent-orange">
-                        Editing
-                      </span>
-                    )}
+                    <div className="flex shrink-0 items-center gap-1.5">
+                      {postDirty && !active && (
+                        <span
+                          className="h-2 w-2 rounded-full bg-accent-orange shadow-[0_0_8px_color-mix(in_srgb,var(--accent-orange)_60%,transparent)]"
+                          title="Unsaved changes"
+                        />
+                      )}
+                      {active && (
+                        <span className="rounded-full border border-accent-orange/50 bg-accent-orange/15 px-2 py-0.5 text-[0.6rem] font-bold uppercase tracking-wider text-accent-orange">
+                          Editing
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <p
                     className={`mt-1 text-xs ${
@@ -478,14 +614,27 @@ export default function AdminPostsManager({
 
         {selectedPost ? (
           <section className="rounded-2xl border border-white/8 bg-bg-secondary/60 p-6">
-            <h2 className="font-display text-xl font-semibold text-bone">
-              Edit post
-            </h2>
-            <p className="mt-1 text-sm text-muted">
-              Saved covers and linked posts show their preview right away.
-              Paste a new YouTube or Instagram link to update title, date, and
-              thumbnail automatically.
-            </p>
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <h2 className="font-display text-xl font-semibold text-bone">
+                  Edit post
+                </h2>
+                <p className="mt-1 text-sm text-muted">
+                  Saved covers and linked posts show their preview right away.
+                  Paste a new YouTube or Instagram link to update title, date,
+                  and thumbnail automatically.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={saveCurrentPost}
+                disabled={saving || !hasUnsavedChanges}
+                className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-accent-orange px-4 py-2.5 text-sm font-semibold text-bone hover:opacity-90 disabled:opacity-50"
+              >
+                <Save className="h-4 w-4" />
+                {saving ? "Saving…" : "Save post"}
+              </button>
+            </div>
 
             <div className="mt-6 space-y-5">
               <div className="grid gap-5 sm:grid-cols-2">
@@ -671,6 +820,55 @@ export default function AdminPostsManager({
           </section>
         )}
       </div>
+
+      {pendingNavigation && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg-primary/80 px-4 backdrop-blur-sm">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="unsaved-dialog-title"
+            className="w-full max-w-md rounded-2xl border border-white/10 bg-bg-secondary p-6 shadow-[0_0_40px_color-mix(in_srgb,var(--accent-purple)_35%,transparent)]"
+          >
+            <h3
+              id="unsaved-dialog-title"
+              className="font-display text-xl font-semibold text-bone"
+            >
+              Unsaved changes
+            </h3>
+            <p className="mt-3 text-sm leading-relaxed text-muted">
+              This post has changes that haven&apos;t been saved yet. Save before
+              switching, or leave without saving and discard those changes.
+            </p>
+            <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+              <button
+                type="button"
+                onClick={handleSaveAndLeave}
+                disabled={saving}
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-accent-orange px-4 py-2.5 text-sm font-semibold text-bone hover:opacity-90 disabled:opacity-50"
+              >
+                <Save className="h-4 w-4" />
+                {saving ? "Saving…" : "Save and leave"}
+              </button>
+              <button
+                type="button"
+                onClick={handleLeaveWithoutSaving}
+                disabled={saving}
+                className="inline-flex items-center justify-center rounded-xl border border-white/10 px-4 py-2.5 text-sm font-medium text-bone hover:border-accent-red/40 hover:text-accent-orange disabled:opacity-50"
+              >
+                Leave without saving
+              </button>
+              <button
+                type="button"
+                onClick={() => setPendingNavigation(null)}
+                disabled={saving}
+                className="inline-flex items-center justify-center rounded-xl border border-white/10 px-4 py-2.5 text-sm font-medium text-muted hover:text-bone disabled:opacity-50 sm:ml-auto"
+              >
+                Keep editing
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
