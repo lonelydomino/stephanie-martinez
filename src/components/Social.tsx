@@ -54,8 +54,8 @@ export default function Social() {
         {platforms.map((p, i) => (
           <motion.article
             key={p.name}
-            initial={reduce ? false : { opacity: 0, y: 28 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            initial={reduce === false ? { y: 28 } : false}
+            whileInView={reduce === false ? { y: 0 } : undefined}
             viewport={{ once: true, margin: "-40px" }}
             transition={{ delay: i * 0.08, duration: 0.55 }}
             whileHover={reduce ? undefined : { y: -6 }}

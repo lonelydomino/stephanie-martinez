@@ -40,8 +40,8 @@ export default function Hero() {
 
       <div className="relative mx-auto w-full max-w-5xl px-5 pb-24 pt-32 md:px-8 md:pb-32 md:pt-28">
         <motion.div
-          initial={reduce ? false : { opacity: 0, y: 32 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={reduce === false ? { y: 32 } : false}
+          animate={{ y: 0 }}
           transition={{ duration: 0.9, ease: "easeOut" }}
           className="text-center"
         >
@@ -61,8 +61,8 @@ export default function Hero() {
 
           <motion.p
             className="mx-auto mt-6 max-w-xl text-base leading-relaxed text-muted md:mt-8 md:text-lg"
-            initial={reduce ? false : { opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={reduce === false ? { y: 16 } : false}
+            animate={{ y: 0 }}
             transition={{ delay: 0.25, duration: 0.7 }}
           >
             Exploring haunted places, spooky fashion, paranormal adventures,
@@ -71,8 +71,8 @@ export default function Hero() {
 
           <motion.div
             className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row"
-            initial={reduce ? false : { opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={reduce === false ? { y: 16 } : false}
+            animate={{ y: 0 }}
             transition={{ delay: 0.4, duration: 0.7 }}
           >
             <GlowButton href="#social" variant="purple" className="min-w-[200px]">

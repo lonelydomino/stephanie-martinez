@@ -15,7 +15,7 @@ export default function Home() {
     <>
       <Atmosphere />
       <Navbar />
-      <main className="relative flex flex-1 flex-col">
+      <main className="relative z-10 flex flex-1 flex-col">
         <Hero />
         <About />
         <WhatsNew />

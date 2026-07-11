@@ -10,8 +10,8 @@ export default function About() {
     <Section id="about" title="About">
       <motion.div
         className="mx-auto max-w-3xl text-center"
-        initial={reduce ? false : { opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
+        initial={reduce === false ? { y: 20 } : false}
+        whileInView={reduce === false ? { y: 0 } : undefined}
         viewport={{ once: true }}
         transition={{ duration: 0.65 }}
       >

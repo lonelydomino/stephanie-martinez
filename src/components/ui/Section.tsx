@@ -28,8 +28,8 @@ export default function Section({
       <div className="mx-auto max-w-6xl">
         <motion.div
           className="mb-12 text-center md:mb-16"
-          initial={reduce ? false : { opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          initial={reduce === false ? { y: 24 } : false}
+          whileInView={reduce === false ? { y: 0 } : undefined}
           viewport={{ once: true, margin: "-80px" }}
           transition={{ duration: 0.7, ease: "easeOut" }}
         >

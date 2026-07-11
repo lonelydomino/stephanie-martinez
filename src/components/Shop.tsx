@@ -49,8 +49,8 @@ export default function Shop() {
         {shops.map((item, i) => (
           <motion.article
             key={item.name}
-            initial={reduce ? false : { opacity: 0, y: 28 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            initial={reduce === false ? { y: 28 } : false}
+            whileInView={reduce === false ? { y: 0 } : undefined}
             viewport={{ once: true, margin: "-40px" }}
             transition={{ delay: i * 0.08, duration: 0.55 }}
             whileHover={

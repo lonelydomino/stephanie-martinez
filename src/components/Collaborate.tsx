@@ -37,8 +37,8 @@ export default function Collaborate() {
     >
       <div className="grid gap-10 lg:grid-cols-2">
         <motion.div
-          initial={reduce ? false : { opacity: 0, x: -20 }}
-          whileInView={{ opacity: 1, x: 0 }}
+          initial={reduce === false ? { x: -20 } : false}
+          whileInView={reduce === false ? { x: 0 } : undefined}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
         >
@@ -58,8 +58,8 @@ export default function Collaborate() {
         </motion.div>
 
         <motion.div
-          initial={reduce ? false : { opacity: 0, x: 20 }}
-          whileInView={{ opacity: 1, x: 0 }}
+          initial={reduce === false ? { x: 20 } : false}
+          whileInView={reduce === false ? { x: 0 } : undefined}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
         >
@@ -82,8 +82,8 @@ export default function Collaborate() {
       <motion.div
         id="contact"
         className="mt-14 flex flex-col items-center justify-center gap-4 sm:flex-row"
-        initial={reduce ? false : { opacity: 0, y: 16 }}
-        whileInView={{ opacity: 1, y: 0 }}
+        initial={reduce === false ? { y: 16 } : false}
+        whileInView={reduce === false ? { y: 0 } : undefined}
         viewport={{ once: true }}
         transition={{ duration: 0.55 }}
       >

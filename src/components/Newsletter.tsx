@@ -40,8 +40,8 @@ export default function Newsletter() {
     >
       <motion.div
         className="mx-auto flex max-w-2xl flex-col items-center gap-8 sm:flex-row sm:items-end sm:justify-center"
-        initial={reduce ? false : { opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
+        initial={reduce === false ? { y: 20 } : false}
+        whileInView={reduce === false ? { y: 0 } : undefined}
         viewport={{ once: true }}
         transition={{ duration: 0.6 }}
       >
