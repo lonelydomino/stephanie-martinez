@@ -839,32 +839,34 @@ export default function AdminPostsManager({
               This post has changes that haven&apos;t been saved yet. Save before
               switching, or leave without saving and discard those changes.
             </p>
-            <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+            <div className="mt-6 space-y-3 border-t border-white/8 pt-5">
               <button
                 type="button"
                 onClick={handleSaveAndLeave}
                 disabled={saving}
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-accent-orange px-4 py-2.5 text-sm font-semibold text-bone hover:opacity-90 disabled:opacity-50"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-accent-orange px-4 py-3 text-sm font-semibold text-bone hover:opacity-90 disabled:opacity-50"
               >
                 <Save className="h-4 w-4" />
                 {saving ? "Saving…" : "Save and leave"}
               </button>
-              <button
-                type="button"
-                onClick={handleLeaveWithoutSaving}
-                disabled={saving}
-                className="inline-flex items-center justify-center rounded-xl border border-white/10 px-4 py-2.5 text-sm font-medium text-bone hover:border-accent-red/40 hover:text-accent-orange disabled:opacity-50"
-              >
-                Leave without saving
-              </button>
-              <button
-                type="button"
-                onClick={() => setPendingNavigation(null)}
-                disabled={saving}
-                className="inline-flex items-center justify-center rounded-xl border border-white/10 px-4 py-2.5 text-sm font-medium text-muted hover:text-bone disabled:opacity-50 sm:ml-auto"
-              >
-                Keep editing
-              </button>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setPendingNavigation(null)}
+                  disabled={saving}
+                  className="inline-flex items-center justify-center rounded-xl border border-white/10 bg-bg-primary/50 px-4 py-3 text-sm font-medium text-bone hover:border-accent-purple/40 disabled:opacity-50"
+                >
+                  Keep editing
+                </button>
+                <button
+                  type="button"
+                  onClick={handleLeaveWithoutSaving}
+                  disabled={saving}
+                  className="inline-flex items-center justify-center rounded-xl border border-accent-red/25 bg-accent-red/10 px-4 py-3 text-sm font-medium text-bone hover:border-accent-red/45 hover:bg-accent-red/15 disabled:opacity-50"
+                >
+                  Discard changes
+                </button>
+              </div>
             </div>
           </div>
         </div>
