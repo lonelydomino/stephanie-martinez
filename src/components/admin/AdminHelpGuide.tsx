@@ -38,6 +38,14 @@ const GUIDE_SECTIONS = [
     ],
   },
   {
+    title: "Reordering posts",
+    items: [
+      "Click Rearrange to show move controls on the post list.",
+      "Drag posts into place or use the up and down arrows.",
+      "Click Save when the order looks right. Cancel puts the list back how it was.",
+    ],
+  },
+  {
     title: "Saving and going live",
     items: [
       "Click Save post when you are done. The live website updates in about 1–2 minutes.",
