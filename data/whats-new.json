@@ -1,17 +1,6 @@
 {
   "posts": [
     {
-      "slug": "new-orleans-most-haunted",
-      "excerpt": "A tour through New Orleans' most haunted locations — legends, lore, and the spots that still give us chills.",
-      "category": "Investigation",
-      "status": "current",
-      "size": "large",
-      "href": "https://youtu.be/3UlpjWwiyJM",
-      "title": "New Orleans Most Haunted Locations",
-      "when": "June 24, 2026",
-      "imageAlt": "New Orleans haunted locations"
-    },
-    {
       "slug": "haunted-at-the-roosevelt",
       "excerpt": "A haunted look inside The Roosevelt — ghost stories, eerie history, and the spots that still feel unsettling after dark.",
       "category": "Investigation",
@@ -21,6 +10,17 @@
       "title": "Haunted at The Roosevelt",
       "when": "June 23, 2026",
       "imageAlt": "The Roosevelt hotel"
+    },
+    {
+      "slug": "new-orleans-most-haunted",
+      "excerpt": "A tour through New Orleans' most haunted locations — legends, lore, and the spots that still give us chills.",
+      "category": "Investigation",
+      "status": "current",
+      "size": "large",
+      "href": "https://youtu.be/3UlpjWwiyJM",
+      "title": "New Orleans Most Haunted Locations",
+      "when": "June 24, 2026",
+      "imageAlt": "New Orleans haunted locations"
     },
     {
       "slug": "paranormal-this-n-that-ep1",
