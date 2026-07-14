@@ -18,6 +18,7 @@ import Logo from "@/components/Logo";
 import CoverFramingEditor from "@/components/admin/CoverFramingEditor";
 import AdminHelpGuide from "@/components/admin/AdminHelpGuide";
 import AdminSiteStatus, { type SiteStatus } from "@/components/admin/AdminSiteStatus";
+import AdminUpdatesModal from "@/components/admin/AdminUpdatesModal";
 import { FieldHelp, FieldLabel } from "@/components/admin/FieldHelp";
 import { normalizePost, postsSnapshot } from "@/lib/adminPostSnapshot";
 import {
@@ -697,6 +698,7 @@ export default function AdminPostsManager({
 
         <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           <AdminSiteStatus status={siteStatus} />
+          <AdminUpdatesModal />
           <AdminHelpGuide />
           <Link
             href="/"
