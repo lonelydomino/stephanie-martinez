@@ -1,7 +1,7 @@
 import type { WhatsNewPostSource } from "./whatsNewPosts";
 
 const STORAGE_KEY = "whats-new-pending-deploy";
-const MAX_AGE_MS = 2 * 60 * 60 * 1000;
+const MAX_AGE_MS = 15 * 60 * 1000;
 
 type PendingDeployState = {
   savedAt: number;

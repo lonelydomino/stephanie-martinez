@@ -332,7 +332,7 @@ export default function AdminPostsManager({
     };
 
     void pollServerPosts();
-    const interval = window.setInterval(pollServerPosts, 8000);
+    const interval = window.setInterval(pollServerPosts, 3000);
 
     return () => {
       cancelled = true;
@@ -877,7 +877,7 @@ export default function AdminPostsManager({
                       {isDeploying && (
                         <span className="inline-flex items-center gap-1 rounded-full border border-sky-400/50 bg-sky-500/15 px-2 py-0.5 text-[0.6rem] font-bold uppercase tracking-wider text-sky-200">
                           <Loader2 className="h-3 w-3 animate-spin" />
-                          Deploying…
+                          Publishing…
                         </span>
                       )}
                       {postDirty && !active && !isDeploying && (
@@ -976,8 +976,8 @@ export default function AdminPostsManager({
                     align="end"
                     text={
                       isCreating
-                        ? "Creates this new post on the website. After saving, allow 1–2 minutes for the live site to update."
-                        : "Saves your changes to this post. After saving, allow 1–2 minutes for the live site to update."
+                        ? "Creates this new post on the website. Changes usually go live within a few seconds after saving."
+                        : "Saves your changes to this post. The live site usually updates within a few seconds."
                     }
                   />
                 </div>
